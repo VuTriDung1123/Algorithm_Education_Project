@@ -2,12 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Play, Pause, StepForward, RotateCcw, ArrowLeft } from "lucide-react"; 
 import Link from "next/link";
-import { ArrowLeft, Play, Pause, StepForward, RotateCcw } from "lucide-react"; // Import icon cho đẹp
 import { generateBubbleSortSteps } from "@/lib/algorithms/bubbleSort";
 import { AnimationStep } from "@/lib/algorithms/types";
 
-export default function Home() {
+export default function BubbleSortPage() {
   // --- 1. SETUP STATE & REFS ---
   const createRandomArray = () => {
     const newArray = [];
@@ -20,22 +20,20 @@ export default function Home() {
   const [array, setArray] = useState<number[]>(() => createRandomArray());
   
   // Trạng thái điều khiển
-  const [isSorting, setIsSorting] = useState(false); // Đã bắt đầu thuật toán chưa?
-  const [isPlaying, setIsPlaying] = useState(false); // Đang chạy hay đang pause?
-  const [delay, setDelay] = useState(100); // Tốc độ (ms) - Càng nhỏ càng nhanh
+  const [isSorting, setIsSorting] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [delay, setDelay] = useState(100);
 
   // Trạng thái hiển thị
   const [highlightIndices, setHighlightIndices] = useState<number[]>([]);
   const [sortedIndices, setSortedIndices] = useState<number[]>([]);
   const [actionType, setActionType] = useState<'COMPARE' | 'SWAP' | 'SORTED' | null>(null);
 
-  // REFS: Lưu trữ những thứ không thay đổi khi render lại
+  // REFS
   const generatorRef = useRef<Generator<AnimationStep> | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- 2. CÁC HÀM XỬ LÝ LOGIC ---
-
-  // Hàm xử lý 1 bước chạy duy nhất
   const processNextStep = () => {
     if (!generatorRef.current) return;
 
@@ -59,7 +57,6 @@ export default function Home() {
     }
   };
 
-  // Nút Random: Reset toàn bộ
   const handleRandomize = () => {
     if (isSorting) return;
     setArray(createRandomArray());
@@ -68,22 +65,17 @@ export default function Home() {
     setActionType(null);
   };
 
-  // Nút Play/Pause
   const handlePlayPause = () => {
-    // Nếu chưa bắt đầu sort thì khởi tạo generator mới
     if (!isSorting) {
       setIsSorting(true);
       setSortedIndices([]);
       generatorRef.current = generateBubbleSortSteps(array);
     }
-    // Đảo ngược trạng thái Play/Pause
     setIsPlaying(!isPlaying);
   };
 
-  // Nút Step Forward (Chỉ hiện khi Pause)
   const handleStepForward = () => {
     if (!isSorting) {
-      // Nếu chưa chạy thì khởi tạo trước rồi chạy 1 bước
       setIsSorting(true);
       setSortedIndices([]);
       generatorRef.current = generateBubbleSortSteps(array);
@@ -91,24 +83,20 @@ export default function Home() {
     processNextStep();
   };
 
-  // --- 3. EFFECT: VÒNG LẶP ANIMATION ---
-  // Đây là trái tim của việc điều khiển tốc độ và Play/Pause
+  // --- 3. EFFECT ---
   useEffect(() => {
     if (isPlaying) {
-      // Nếu đang Play, đặt hẹn giờ chạy bước tiếp theo
       timeoutRef.current = setTimeout(() => {
         processNextStep();
       }, delay);
     } else {
-      // Nếu Pause, xóa hẹn giờ
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     }
 
-    // Dọn dẹp khi unmount hoặc đổi trạng thái
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [isPlaying, delay, array]); // Chạy lại khi array đổi (bước tiếp) hoặc delay đổi (tua nhanh)
+  }, [isPlaying, delay, array]);
 
   // --- 4. HÀM HELPER ---
   const getBarColor = (index: number) => {
@@ -122,30 +110,24 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-slate-950 text-white p-8">
-
-        {/* Nút Back */}
-        <div className="w-full max-w-4xl mb-6">
-            <Link href="/" className="flex items-center text-slate-400 hover:text-white transition-colors gap-2">
-            <ArrowLeft size={20} /> Back to Dashboard
-            </Link>
-        </div>
       
-      {/* Header */}
-      <div className="flex justify-between items-center w-full max-w-4xl mb-8">
-        <h1 className="text-2xl font-bold bg-linear-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-          VisuAlgo 2.0
-        </h1>
-        <div className="text-slate-400 text-sm font-mono">
-          Bubble Sort
-        </div>
+      {/* Header & Back Button */}
+      <div className="w-full max-w-4xl mb-6">
+        <Link href="/" className="flex items-center text-slate-400 hover:text-white transition-colors gap-2 w-fit">
+            <ArrowLeft size={20} /> Back to Dashboard
+        </Link>
       </div>
 
-      {/* --- CONTROL PANEL (BẢNG ĐIỀU KHIỂN MỚI) --- */}
+      <div className="flex justify-between items-center w-full max-w-4xl mb-8">
+        <h1 className="text-3xl font-bold bg-linear-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          Bubble Sort Visualization
+        </h1>
+      </div>
+
+      {/* CONTROL PANEL */}
       <div className="w-full max-w-4xl bg-slate-900 border border-slate-800 p-4 rounded-xl mb-8 flex flex-col md:flex-row gap-6 items-center justify-between shadow-xl">
         
-        {/* Nhóm nút bấm */}
         <div className="flex gap-3">
-          {/* Nút Reset */}
           <button 
             onClick={handleRandomize} disabled={isSorting}
             className="p-3 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 rounded-full transition-colors"
@@ -154,7 +136,6 @@ export default function Home() {
             <RotateCcw size={20} />
           </button>
 
-          {/* Nút Play / Pause */}
           <button 
             onClick={handlePlayPause}
             className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold transition-all ${
@@ -167,7 +148,6 @@ export default function Home() {
             {isPlaying ? "Pause" : isSorting ? "Resume" : "Start"}
           </button>
 
-          {/* Nút Step (Chỉ hiện khi Pause) */}
           <button 
             onClick={handleStepForward}
             disabled={isPlaying}
@@ -178,13 +158,11 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Thanh trượt tốc độ */}
         <div className="flex items-center gap-4 w-full md:w-auto bg-slate-950/50 p-3 rounded-lg border border-slate-800">
           <span className="text-xs font-bold text-slate-400 uppercase">Speed</span>
           <input 
             type="range" 
             min="10" max="1000" step="10"
-            // Đảo ngược giá trị: delay thấp = speed cao
             value={1010 - delay} 
             onChange={(e) => setDelay(1010 - Number(e.target.value))}
             className="w-32 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
@@ -212,7 +190,6 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Legend */}
       <div className="mt-8 flex gap-6 text-sm text-slate-400">
         <div className="flex items-center gap-2"><div className="w-3 h-3 bg-cyan-500 rounded"></div> Idle</div>
         <div className="flex items-center gap-2"><div className="w-3 h-3 bg-yellow-400 rounded"></div> Compare</div>
