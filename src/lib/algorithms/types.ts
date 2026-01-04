@@ -13,7 +13,10 @@ export type ActionType =
   | 'PLACE'
   | 'GET_DIGIT'   // <--- MỚI: Đang xét chữ số nào
   | 'BUCKET_PUSH' // <--- MỚI: Đẩy vào thùng
-  | 'BUCKET_POP'; // <--- MỚI: Lấy ra khỏi thùng
+  | 'BUCKET_POP' // <--- MỚI: Lấy ra khỏi thùng
+  | 'BUCKET_SCATTER'      // Phân phối vào thùng
+  | 'BUCKET_SORT_INTERNAL' // Sắp xếp nội bộ trong thùng
+  | 'BUCKET_GATHER';      // Gom từ thùng về mảng
 
 export interface AnimationStep {
   type: ActionType;
@@ -22,7 +25,7 @@ export interface AnimationStep {
   sortedIndices: number[];
   message: string;
   variables: {
-    // ... (các biến cũ)
+    // Biến chung cho nhiều thuật toán
     i?: number;
     j?: number;
     k?: number;
@@ -47,6 +50,9 @@ export interface AnimationStep {
     digitVal?: number;       // Giá trị chữ số (0-9)
     buckets?: number[][];    // Trạng thái các thùng (snapshot)
     activeBucket?: number;   // Thùng đang hoạt động
+    bucketRanges?: string[]; // Nhãn hiển thị phạm vi (ví dụ "0-19")
+
+    
   };
   counts: {
     comparisons: number; // Radix không so sánh, dùng để đếm thao tác Extract Digit

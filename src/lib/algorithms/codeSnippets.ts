@@ -17,6 +17,9 @@ interface CodeSnippet {
     GET_DIGIT?: number;    // <--- MỚI: Cho Radix Sort
     BUCKET_PUSH?: number;  // <--- MỚI: Cho Radix Sort
     BUCKET_POP?: number;   // <--- MỚI: Cho Radix Sort
+    BUCKET_SCATTER?: number;      // Cho Bucket Sort
+    BUCKET_SORT_INTERNAL?: number; // Cho Bucket Sort
+    BUCKET_GATHER?: number;      // Cho Bucket Sort
 
   };
 }
@@ -759,5 +762,123 @@ void radixSort(int arr[], int n) {
     }
 }`,
     highlight: { GET_DIGIT: 3, BUCKET_PUSH: 4, BUCKET_POP: 4 }
+  }
+};
+
+
+// --- 9. BUCKET SORT ---
+export const bucketSortCode: Record<Language, CodeSnippet> = {
+  'Pseudo': {
+    code: `procedure bucketSort(arr):
+  create buckets array
+  
+  // Scatter
+  for each element in arr:
+    index = bucketIndex(element)
+    buckets[index].push(element)
+    
+  // Sort Internal & Gather
+  i = 0
+  for each bucket in buckets:
+    sort(bucket) // usually Insertion Sort
+    for each element in bucket:
+      arr[i++] = element
+end procedure`,
+    highlight: { BUCKET_SCATTER: 6, BUCKET_SORT_INTERNAL: 11, BUCKET_GATHER: 13 }
+  },
+  'C++': {
+    code: `void bucketSort(float arr[], int n) {
+    vector<float> b[n];
+    
+    // 1. Put array elements in different buckets
+    for (int i=0; i<n; i++) {
+       int bi = n * arr[i]; 
+       b[bi].push_back(arr[i]);
+    }
+ 
+    // 2. Sort individual buckets & Concatenate
+    int index = 0;
+    for (int i=0; i<n; i++) {
+       sort(b[i].begin(), b[i].end());
+       for (int j=0; j<b[i].size(); j++)
+          arr[index++] = b[i][j];
+    }
+}`,
+    highlight: { BUCKET_SCATTER: 6, BUCKET_SORT_INTERNAL: 11, BUCKET_GATHER: 13 }
+  },
+  'C#': {
+    code: `void BucketSort(int[] arr) {
+    // Init buckets...
+    
+    // Scatter
+    for (int i = 0; i < arr.Length; i++) {
+        int bucketIdx = GetBucketIndex(arr[i]);
+        buckets[bucketIdx].Add(arr[i]);
+    }
+
+    // Sort & Gather
+    int k = 0;
+    foreach (var bucket in buckets) {
+        bucket.Sort();
+        foreach (var item in bucket) arr[k++] = item;
+    }
+}`,
+    highlight: { BUCKET_SCATTER: 6, BUCKET_SORT_INTERNAL: 11, BUCKET_GATHER: 12 }
+  },
+  'Java': {
+    code: `void bucketSort(float[] arr, int n) {
+    ArrayList<Float>[] buckets = new ArrayList[n];
+    // Init...
+    
+    for (int i = 0; i < n; i++) {
+        int bi = (int)(n * arr[i]);
+        buckets[bi].add(arr[i]);
+    }
+
+    int index = 0;
+    for (int i = 0; i < n; i++) {
+        Collections.sort(buckets[i]);
+        for (int j = 0; j < buckets[i].size(); j++) {
+            arr[index++] = buckets[i].get(j);
+        }
+    }
+}`,
+    highlight: { BUCKET_SCATTER: 7, BUCKET_SORT_INTERNAL: 12, BUCKET_GATHER: 14 }
+  },
+  'Python': {
+    code: `def bucket_sort(arr):
+    buckets = [[] for _ in range(len(arr))]
+    
+    # Scatter
+    for num in arr:
+        bi = int(len(arr) * num)
+        buckets[bi].append(num)
+        
+    # Sort & Gather
+    res = []
+    for bucket in buckets:
+        bucket.sort()
+        res.extend(bucket)
+    return res`,
+    highlight: { BUCKET_SCATTER: 6, BUCKET_SORT_INTERNAL: 11, BUCKET_GATHER: 12 }
+  },
+  'Go': {
+    code: `func BucketSort(arr []float64) {
+    // ... init buckets ...
+    for _, v := range arr {
+        bi := int(v * float64(n))
+        buckets[bi] = append(buckets[bi], v)
+    }
+    
+    idx := 0
+    for _, bucket := range buckets {
+        sort.Float64s(bucket)
+        for _, v := range bucket {
+            arr[idx] = v
+            idx++
+        }
+    }
+}`,
+    highlight: { BUCKET_SCATTER: 4, BUCKET_SORT_INTERNAL: 9, BUCKET_GATHER: 11 }
   }
 };
