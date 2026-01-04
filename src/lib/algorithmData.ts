@@ -76,7 +76,7 @@ export const algorithmCategories: AlgorithmCategory[] = [
     items: [
       { title: "Bubble Sort", description: "Sắp xếp nổi bọt.", href: "/sorting/bubble", tags: ["O(n²)", "Simple"], isReady: true }, // OPEN
       { title: "Selection Sort", description: "Sắp xếp chọn.", href: "/sorting/selection", tags: ["O(n²)"], isReady: true },//OPEN
-      { title: "Insertion Sort", description: "Sắp xếp chèn.", href: "/sorting/insertion", tags: ["O(n²)"], isReady: false },
+      { title: "Insertion Sort", description: "Sắp xếp chèn.", href: "/sorting/insertion", tags: ["O(n²)"], isReady: true },//OPEN
       { title: "Merge Sort", description: "Sắp xếp trộn (Chia để trị).", href: "/sorting/merge", tags: ["O(n log n)"], isReady: false },
       { title: "Quick Sort", description: "Sắp xếp nhanh (Phân hoạch).", href: "/sorting/quick", tags: ["O(n log n)"], isReady: false },
       { title: "Heap Sort", description: "Sắp xếp vun đống.", href: "/sorting/heap", tags: ["O(n log n)"], isReady: false },
