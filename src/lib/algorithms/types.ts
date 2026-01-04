@@ -8,17 +8,21 @@ export type ActionType =
   | 'MERGE'   
   | 'OVERWRITE'
   | 'PIVOT'
-  | 'COUNT'      // <--- MỚI: Tăng biến đếm
-  | 'ACCUMULATE' // <--- MỚI: Cộng dồn (Prefix Sum)
-  | 'PLACE';     // <--- MỚI: Đặt phần tử vào mảng kết quả
+  | 'COUNT'
+  | 'ACCUMULATE'
+  | 'PLACE'
+  | 'GET_DIGIT'   // <--- MỚI: Đang xét chữ số nào
+  | 'BUCKET_PUSH' // <--- MỚI: Đẩy vào thùng
+  | 'BUCKET_POP'; // <--- MỚI: Lấy ra khỏi thùng
 
 export interface AnimationStep {
   type: ActionType;
   indices: number[]; 
   arrayState: number[];
-  sortedIndices: number[]; // Với Counting sort, ta dùng cái này để đánh dấu phần tử đã vào đúng chỗ
+  sortedIndices: number[];
   message: string;
   variables: {
+    // ... (các biến cũ)
     i?: number;
     j?: number;
     k?: number;
@@ -34,14 +38,18 @@ export interface AnimationStep {
     heapSize?: number;
     parent?: number;
     child?: number;
+    val?: number;
+    countIndex?: number;
+    countArr?: number[];
     
-    // <--- CÁC BIẾN MỚI CHO COUNTING SORT --->
-    val?: number;        // Giá trị đang xét
-    countIndex?: number; // Index trong mảng đếm
-    countArr?: number[]; // Trạng thái của mảng đếm (Snapshot)
+    // <--- BIẾN MỚI CHO RADIX SORT --->
+    digitPlace?: number;     // Hàng đang xét (1, 10, 100...)
+    digitVal?: number;       // Giá trị chữ số (0-9)
+    buckets?: number[][];    // Trạng thái các thùng (snapshot)
+    activeBucket?: number;   // Thùng đang hoạt động
   };
   counts: {
-    comparisons: number; // Counting sort không so sánh, ta có thể dùng biến này đếm số bước "Đếm"
-    swaps: number;       // Đếm số bước "Ghi" (Write)
+    comparisons: number; // Radix không so sánh, dùng để đếm thao tác Extract Digit
+    swaps: number;       // Đếm thao tác Move (Push/Pop)
   };
 }

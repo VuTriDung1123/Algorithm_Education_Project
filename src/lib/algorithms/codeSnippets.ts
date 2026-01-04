@@ -14,6 +14,9 @@ interface CodeSnippet {
     COUNT?: number;        // <--- MỚI: Cho Counting Sort
     ACCUMULATE?: number;   // <--- MỚI: Cho Counting Sort
     PLACE?: number;        // <--- MỚI: Cho Counting Sort
+    GET_DIGIT?: number;    // <--- MỚI: Cho Radix Sort
+    BUCKET_PUSH?: number;  // <--- MỚI: Cho Radix Sort
+    BUCKET_POP?: number;   // <--- MỚI: Cho Radix Sort
 
   };
 }
@@ -683,5 +686,78 @@ export const countingSortCode: Record<Language, CodeSnippet> = {
     }
 }`,
     highlight: { COUNT: 5, ACCUMULATE: 7, PLACE: 10 }
+  }
+};
+
+// --- 8. RADIX SORT ---
+export const radixSortCode: Record<Language, CodeSnippet> = {
+  'Pseudo': {
+    code: `procedure radixSort(arr):
+  max = getMax(arr)
+  for exp = 1 to max/exp > 0:
+    buckets = create 10 empty lists
+    
+    // Scatter
+    for val in arr:
+      digit = (val / exp) % 10
+      buckets[digit].push(val)
+      
+    // Gather
+    index = 0
+    for i = 0 to 9:
+      while buckets[i] is not empty:
+        arr[index++] = buckets[i].pop()
+    
+    exp = exp * 10
+end procedure`,
+    highlight: { GET_DIGIT: 8, BUCKET_PUSH: 9, BUCKET_POP: 15 } // Các dòng tương ứng
+  },
+  'C++': {
+    code: `void countSort(int arr[], int n, int exp) {
+    // ... Counting sort logic based on digit ...
+    // This snippet simplifies the concept using Buckets
+}
+void radixSort(int arr[], int n) {
+    int m = getMax(arr, n);
+    for (int exp = 1; m / exp > 0; exp *= 10)
+        countSort(arr, n, exp);
+}`,
+    highlight: { GET_DIGIT: 6, BUCKET_PUSH: 7, BUCKET_POP: 7 }
+  },
+  'C#': {
+    code: `void RadixSort(int[] arr) {
+    int max = arr.Max();
+    for (int exp = 1; max / exp > 0; exp *= 10) {
+        // Scatter to buckets based on digit
+        // Gather back to array
+    }
+}`,
+    highlight: { GET_DIGIT: 3, BUCKET_PUSH: 4, BUCKET_POP: 5 }
+  },
+  'Java': {
+    code: `void radixSort(int arr[], int n) {
+    int m = getMax(arr, n);
+    for (int exp = 1; m / exp > 0; exp *= 10)
+        countSort(arr, n, exp);
+}`,
+    highlight: { GET_DIGIT: 3, BUCKET_PUSH: 4, BUCKET_POP: 4 }
+  },
+  'Python': {
+    code: `def radix_sort(arr):
+    max1 = max(arr)
+    exp = 1
+    while max1 / exp > 0:
+        counting_sort(arr, exp)
+        exp *= 10`,
+    highlight: { GET_DIGIT: 4, BUCKET_PUSH: 5, BUCKET_POP: 5 }
+  },
+  'Go': {
+    code: `func RadixSort(arr []int) {
+    m := getMax(arr)
+    for exp := 1; m/exp > 0; exp *= 10 {
+        countSort(arr, exp)
+    }
+}`,
+    highlight: { GET_DIGIT: 3, BUCKET_PUSH: 4, BUCKET_POP: 4 }
   }
 };
