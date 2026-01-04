@@ -2,8 +2,11 @@ export type ActionType =
   | 'COMPARE' 
   | 'SWAP'    
   | 'SORTED'
-  | 'SHIFT'   // <--- MỚI: Hành động dời chỗ (arr[j+1] = arr[j])
-  | 'INSERT'; // <--- MỚI: Hành động chèn (arr[j+1] = key)
+  | 'SHIFT'   // Insertion Sort
+  | 'INSERT'  // Insertion Sort
+  | 'DIVIDE'  // <--- MỚI: Merge Sort (Chia)
+  | 'MERGE'   // <--- MỚI: Merge Sort (Bắt đầu gộp)
+  | 'OVERWRITE'; // <--- MỚI: Merge Sort (Ghi giá trị vào mảng chính)
 
 export interface AnimationStep {
   type: ActionType;
@@ -12,15 +15,20 @@ export interface AnimationStep {
   sortedIndices: number[];
   message: string;
   variables: {
-    i: number;
-    j: number;
+    i?: number;
+    j?: number;
+    k?: number;       // <--- MỚI: Index trong mảng chính khi merge
+    left?: number;    // <--- MỚI: Biên trái
+    right?: number;   // <--- MỚI: Biên phải
+    mid?: number;     // <--- MỚI: Điểm giữa
     minIdx?: number;
-    keyVal?: number; // <--- MỚI: Giá trị Key đang cầm trên tay để chèn
+    keyVal?: number;
     compareVal1?: number;
     compareVal2?: number;
+    overwriteVal?: number; // <--- MỚI: Giá trị sắp được ghi vào
   };
   counts: {
     comparisons: number;
-    swaps: number; // Ở Insertion Sort, ta có thể coi Shift là 1 dạng Swap hoặc đếm riêng. Ta cứ đếm vào swaps cho đơn giản.
+    swaps: number; // Với Merge Sort, ta có thể đếm số lần Overwrite vào mảng chính
   };
 }
