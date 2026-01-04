@@ -22,7 +22,7 @@ interface CodeSnippet {
     BUCKET_GATHER?: number;      // Cho Bucket Sort
     TIM_RUN_START?: number;  // Cho Tim Sort
     TIM_MERGE_START?: number; // Cho Tim Sort
-    
+
 
   };
 }
@@ -996,5 +996,101 @@ end procedure`,
     }
 }`,
     highlight: { COMPARE: 4, SHIFT: 4, MERGE: 11, OVERWRITE: 11 }
+  }
+};
+
+// --- 11. SHELL SORT ---
+export const shellSortCode: Record<Language, CodeSnippet> = {
+  'Pseudo': {
+    code: `procedure shellSort(arr):
+  n = length(arr)
+  gap = n/2
+  while gap > 0:
+    for i = gap to n-1:
+      temp = arr[i]
+      j = i
+      while j >= gap and arr[j - gap] > temp:
+        arr[j] = arr[j - gap]
+        j = j - gap
+      arr[j] = temp
+    gap = gap / 2
+end procedure`,
+    highlight: { COMPARE: 8, SHIFT: 9, INSERT: 11 } 
+  },
+  'C++': {
+    code: `void shellSort(int arr[], int n) {
+    for (int gap = n/2; gap > 0; gap /= 2) {
+        for (int i = gap; i < n; i += 1) {
+            int temp = arr[i];
+            int j;
+            for (j = i; j >= gap && arr[j - gap] > temp; j -= gap)
+                arr[j] = arr[j - gap];
+            arr[j] = temp;
+        }
+    }
+}`,
+    highlight: { COMPARE: 6, SHIFT: 7, INSERT: 8 }
+  },
+  'C#': {
+    code: `void ShellSort(int[] arr) {
+    int n = arr.Length;
+    for (int gap = n/2; gap > 0; gap /= 2) {
+        for (int i = gap; i < n; i += 1) {
+            int temp = arr[i];
+            int j;
+            for (j = i; j >= gap && arr[j - gap] > temp; j -= gap)
+                arr[j] = arr[j - gap];
+            arr[j] = temp;
+        }
+    }
+}`,
+    highlight: { COMPARE: 7, SHIFT: 8, INSERT: 9 }
+  },
+  'Java': {
+    code: `void shellSort(int arr[]) {
+    int n = arr.length;
+    for (int gap = n/2; gap > 0; gap /= 2) {
+        for (int i = gap; i < n; i += 1) {
+            int temp = arr[i];
+            int j;
+            for (j = i; j >= gap && arr[j - gap] > temp; j -= gap)
+                arr[j] = arr[j - gap];
+            arr[j] = temp;
+        }
+    }
+}`,
+    highlight: { COMPARE: 7, SHIFT: 8, INSERT: 9 }
+  },
+  'Python': {
+    code: `def shell_sort(arr):
+    n = len(arr)
+    gap = n // 2
+    while gap > 0:
+        for i in range(gap, n):
+            temp = arr[i]
+            j = i
+            while j >= gap and arr[j - gap] > temp:
+                arr[j] = arr[j - gap]
+                j -= gap
+            arr[j] = temp
+        gap //= 2`,
+    highlight: { COMPARE: 8, SHIFT: 9, INSERT: 11 }
+  },
+  'Go': {
+    code: `func ShellSort(arr []int) {
+    n := len(arr)
+    for gap := n/2; gap > 0; gap /= 2 {
+        for i := gap; i < n; i++ {
+            temp := arr[i]
+            j := i
+            for j >= gap && arr[j-gap] > temp {
+                arr[j] = arr[j-gap]
+                j -= gap
+            }
+            arr[j] = temp
+        }
+    }
+}`,
+    highlight: { COMPARE: 7, SHIFT: 8, INSERT: 10 }
   }
 };

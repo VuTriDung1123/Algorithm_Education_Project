@@ -57,6 +57,9 @@ export interface AnimationStep {
 
     runStart?: number; // Điểm bắt đầu của Run hiện tại
     runEnd?: number;   // Điểm kết thúc của Run hiện tại
+
+    gap?: number;      // Khoảng cách hiện tại
+    tempVal?: number;  // Giá trị đang cầm để chèn (giống keyVal nhưng cho Shell)
     
   };
   counts: {
