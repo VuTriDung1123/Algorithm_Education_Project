@@ -20,6 +20,9 @@ interface CodeSnippet {
     BUCKET_SCATTER?: number;      // Cho Bucket Sort
     BUCKET_SORT_INTERNAL?: number; // Cho Bucket Sort
     BUCKET_GATHER?: number;      // Cho Bucket Sort
+    TIM_RUN_START?: number;  // Cho Tim Sort
+    TIM_MERGE_START?: number; // Cho Tim Sort
+    
 
   };
 }
@@ -880,5 +883,118 @@ end procedure`,
     }
 }`,
     highlight: { BUCKET_SCATTER: 4, BUCKET_SORT_INTERNAL: 9, BUCKET_GATHER: 11 }
+  }
+};
+
+// --- 10. TIM SORT ---
+export const timSortCode: Record<Language, CodeSnippet> = {
+  'Pseudo': {
+    code: `procedure timSort(arr):
+  minRun = 32
+  n = length(arr)
+  
+  // 1. Sort individual subarrays of size minRun
+  for i = 0 to n by minRun:
+    insertionSort(arr, i, min(i + minRun - 1, n - 1))
+    
+  // 2. Merge subarrays
+  size = minRun
+  while size < n:
+    for left = 0 to n by 2*size:
+      mid = left + size - 1
+      right = min(left + 2*size - 1, n - 1)
+      if mid < right:
+        merge(arr, left, mid, right)
+    size = 2 * size
+end procedure`,
+    highlight: { COMPARE: 6, SHIFT: 6, INSERT: 6, MERGE: 14, OVERWRITE: 14 } // Map tạm vào các dòng chính
+  },
+  'C++': {
+    code: `void timSort(int arr[], int n) {
+    const int RUN = 32;
+    for (int i = 0; i < n; i += RUN)
+        insertionSort(arr, i, min((i + RUN - 1), (n - 1)));
+ 
+    for (int size = RUN; size < n; size = 2 * size) {
+        for (int left = 0; left < n; left += 2 * size) {
+            int mid = left + size - 1;
+            int right = min((left + 2 * size - 1), (n - 1));
+            if (mid < right)
+                merge(arr, left, mid, right);
+        }
+    }
+}`,
+    highlight: { COMPARE: 3, SHIFT: 3, MERGE: 10, OVERWRITE: 10 }
+  },
+  'C#': {
+    code: `void TimSort(int[] arr, int n) {
+    int RUN = 32;
+    for (int i = 0; i < n; i += RUN)
+        InsertionSort(arr, i, Math.Min((i + RUN - 1), (n - 1)));
+ 
+    for (int size = RUN; size < n; size = 2 * size) {
+        for (int left = 0; left < n; left += 2 * size) {
+            int mid = left + size - 1;
+            int right = Math.Min((left + 2 * size - 1), (n - 1));
+            if (mid < right)
+                Merge(arr, left, mid, right);
+        }
+    }
+}`,
+    highlight: { COMPARE: 3, SHIFT: 3, MERGE: 10, OVERWRITE: 10 }
+  },
+  'Java': {
+    code: `void timSort(int[] arr, int n) {
+    int RUN = 32;
+    for (int i = 0; i < n; i += RUN)
+        insertionSort(arr, i, Math.min((i + 31), (n - 1)));
+ 
+    for (int size = RUN; size < n; size = 2 * size) {
+        for (int left = 0; left < n; left += 2 * size) {
+            int mid = left + size - 1;
+            int right = Math.min((left + 2 * size - 1), (n - 1));
+            if (mid < right)
+                merge(arr, left, mid, right);
+        }
+    }
+}`,
+    highlight: { COMPARE: 3, SHIFT: 3, MERGE: 10, OVERWRITE: 10 }
+  },
+  'Python': {
+    code: `def tim_sort(arr):
+    min_run = 32
+    n = len(arr)
+    
+    for i in range(0, n, min_run):
+        insertion_sort(arr, i, min((i + min_run - 1), n - 1))
+        
+    size = min_run
+    while size < n:
+        for left in range(0, n, 2 * size):
+            mid = left + size - 1
+            right = min((left + 2 * size - 1), (n - 1))
+            if mid < right:
+                merge(arr, left, mid, right)
+        size = 2 * size`,
+    highlight: { COMPARE: 5, SHIFT: 5, MERGE: 13, OVERWRITE: 13 }
+  },
+  'Go': {
+    code: `func TimSort(arr []int) {
+    minRun := 32
+    n := len(arr)
+    for i := 0; i < n; i += minRun {
+        insertionSort(arr, i, min(i+minRun-1, n-1))
+    }
+    for size := minRun; size < n; size = 2 * size {
+        for left := 0; left < n; left += 2 * size {
+            mid := left + size - 1
+            right := min(left + 2*size-1, n-1)
+            if mid < right {
+                merge(arr, left, mid, right)
+            }
+        }
+    }
+}`,
+    highlight: { COMPARE: 4, SHIFT: 4, MERGE: 11, OVERWRITE: 11 }
   }
 };
