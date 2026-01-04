@@ -7,13 +7,16 @@ export type ActionType =
   | 'DIVIDE'  
   | 'MERGE'   
   | 'OVERWRITE'
-  | 'PIVOT'; 
+  | 'PIVOT'
+  | 'COUNT'      // <--- MỚI: Tăng biến đếm
+  | 'ACCUMULATE' // <--- MỚI: Cộng dồn (Prefix Sum)
+  | 'PLACE';     // <--- MỚI: Đặt phần tử vào mảng kết quả
 
 export interface AnimationStep {
   type: ActionType;
   indices: number[]; 
   arrayState: number[];
-  sortedIndices: number[];
+  sortedIndices: number[]; // Với Counting sort, ta dùng cái này để đánh dấu phần tử đã vào đúng chỗ
   message: string;
   variables: {
     i?: number;
@@ -28,12 +31,17 @@ export interface AnimationStep {
     compareVal1?: number;
     compareVal2?: number;
     overwriteVal?: number;
-    heapSize?: number; // <--- MỚI: Kích thước vùng Heap hiện tại
-    parent?: number;   // <--- MỚI: Để highlight node cha
-    child?: number;    // <--- MỚI: Để highlight node con
+    heapSize?: number;
+    parent?: number;
+    child?: number;
+    
+    // <--- CÁC BIẾN MỚI CHO COUNTING SORT --->
+    val?: number;        // Giá trị đang xét
+    countIndex?: number; // Index trong mảng đếm
+    countArr?: number[]; // Trạng thái của mảng đếm (Snapshot)
   };
   counts: {
-    comparisons: number;
-    swaps: number;
+    comparisons: number; // Counting sort không so sánh, ta có thể dùng biến này đếm số bước "Đếm"
+    swaps: number;       // Đếm số bước "Ghi" (Write)
   };
 }
