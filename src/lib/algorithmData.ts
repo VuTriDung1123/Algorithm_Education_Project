@@ -77,7 +77,7 @@ export const algorithmCategories: AlgorithmCategory[] = [
       { title: "Bubble Sort", description: "Sắp xếp nổi bọt.", href: "/sorting/bubble", tags: ["O(n²)", "Simple"], isReady: true }, // OPEN
       { title: "Selection Sort", description: "Sắp xếp chọn.", href: "/sorting/selection", tags: ["O(n²)"], isReady: true },//OPEN
       { title: "Insertion Sort", description: "Sắp xếp chèn.", href: "/sorting/insertion", tags: ["O(n²)"], isReady: true },//OPEN
-      { title: "Merge Sort", description: "Sắp xếp trộn (Chia để trị).", href: "/sorting/merge", tags: ["O(n log n)"], isReady: false },
+      { title: "Merge Sort", description: "Sắp xếp trộn (Chia để trị).", href: "/sorting/merge", tags: ["O(n log n)"], isReady: true },//OPEN
       { title: "Quick Sort", description: "Sắp xếp nhanh (Phân hoạch).", href: "/sorting/quick", tags: ["O(n log n)"], isReady: false },
       { title: "Heap Sort", description: "Sắp xếp vun đống.", href: "/sorting/heap", tags: ["O(n log n)"], isReady: false },
       { title: "Counting Sort", description: "Đếm số lần xuất hiện.", href: "/sorting/counting", tags: ["Linear"], isReady: false },
@@ -172,7 +172,7 @@ export const algorithmCategories: AlgorithmCategory[] = [
     icon: Scissors,
     color: "text-teal-400",
     items: [
-      { title: "Merge Sort", description: "Đã có trong phần Sorting.", href: "/sorting/merge", tags: ["Sort"], isReady: false },
+      { title: "Merge Sort", description: "Đã có trong phần Sorting.", href: "/sorting/merge", tags: ["Sort"], isReady: true }, // OPEN
       { title: "Quick Sort", description: "Đã có trong phần Sorting.", href: "/sorting/quick", tags: ["Sort"], isReady: false },
       { title: "Binary Search", description: "Đã có trong phần Searching.", href: "/search/binary", tags: ["Search"], isReady: false },
       { title: "Strassen Matrix", description: "Nhân ma trận nhanh.", href: "/dc/strassen", tags: ["Math"], isReady: false },
