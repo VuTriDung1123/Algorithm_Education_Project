@@ -16,7 +16,10 @@ export type ActionType =
   | 'BUCKET_POP' // <--- MỚI: Lấy ra khỏi thùng
   | 'BUCKET_SCATTER'      // Phân phối vào thùng
   | 'BUCKET_SORT_INTERNAL' // Sắp xếp nội bộ trong thùng
-  | 'BUCKET_GATHER';      // Gom từ thùng về mảng
+  | 'BUCKET_GATHER' // Gom từ thùng về mảng
+  | 'TIM_RUN_START'  // Bắt đầu 1 Run (Insertion)
+  | 'TIM_MERGE_START'; // Bắt đầu Merge 2 Runs
+    
 
 export interface AnimationStep {
   type: ActionType;
@@ -52,6 +55,8 @@ export interface AnimationStep {
     activeBucket?: number;   // Thùng đang hoạt động
     bucketRanges?: string[]; // Nhãn hiển thị phạm vi (ví dụ "0-19")
 
+    runStart?: number; // Điểm bắt đầu của Run hiện tại
+    runEnd?: number;   // Điểm kết thúc của Run hiện tại
     
   };
   counts: {
