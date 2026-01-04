@@ -10,71 +10,70 @@ import {
   Hash, ArrowRightLeft, Clock, Zap,
   Info, X, BookOpen, 
   Volume2, VolumeX, Share2, Gamepad2, Trophy, ThumbsDown,
-  // Đã xóa các icon thừa (Split, Merge, ArrowDown)
 } from "lucide-react"; 
 import Link from "next/link";
 import { generateMergeSortTimeline } from "@/lib/algorithms/mergeSort";
 import { AnimationStep } from "@/lib/algorithms/types";
 import { mergeSortCode, Language } from "@/lib/algorithms/codeSnippets";
-// Đã xóa playSwapSound vì Merge Sort dùng Overwrite sound riêng
 import { playCompareSound, playSuccessSound, playErrorSound, playNote } from "@/lib/sound";
+// --- IMPORT TREE COMPONENT ---
+import MergeTree from "@/components/Visualization/MergeTree";
 
 // --- 1. CONFIG ---
-const ARRAY_SIZE = 15;
+const ARRAY_SIZE = 15; // 15 phần tử là đẹp nhất cho cây cân bằng
 const MIN_VALUE = 10;
-const MAX_VALUE = 100;
+const MAX_VALUE = 99;
 const ANIMATION_SPEED_MIN = 10;
 const ANIMATION_SPEED_MAX = 500;
 
-// --- THEORY COMPONENT ---
+// ... (Giữ nguyên MergeSortTheory và Helper Functions) ...
 const MergeSortTheory = () => (
-  <div className="space-y-6 text-slate-300 leading-relaxed">
-    <div>
-      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-        <Info size={20} className="text-cyan-400" /> 1. What is Merge Sort?
-      </h3>
-      <p>
-        {/* Đã sửa lỗi quotes */}
-        <strong>Merge Sort</strong> is a &quot;Divide and Conquer&quot; algorithm. It divides the input array into two halves, calls itself for the two halves, and then <strong>merges</strong> the two sorted halves.
-      </p>
-    </div>
-
-    <div>
-      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-        <Activity size={20} className="text-yellow-400" /> 2. How it works
-      </h3>
-      <ul className="list-disc pl-5 space-y-2 marker:text-yellow-500">
-        <li><strong>Divide:</strong> Find the middle point to divide the array into two halves.</li>
-        <li><strong>Conquer:</strong> Recursively call MergeSort for the first half and the second half.</li>
-        <li><strong>Combine:</strong> Merge the two halves sorted in previous steps.</li>
-      </ul>
-    </div>
-
-    <div>
-      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-        <Zap size={20} className="text-red-400" /> 3. Complexity Analysis
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-slate-800 p-3 rounded border border-slate-700">
-          <span className="text-slate-400 text-xs uppercase font-bold">Time Complexity</span>
-          <p className="text-lg font-bold text-green-400">O(n log n)</p>
-          <p className="text-xs text-slate-500">Very efficient (Log-linear). Guaranteed worst-case.</p>
-        </div>
-        <div className="bg-slate-800 p-3 rounded border border-slate-700">
-          <span className="text-slate-400 text-xs uppercase font-bold">Space Complexity</span>
-          <p className="text-lg font-bold text-yellow-400">O(n)</p>
-          <p className="text-xs text-slate-500">Requires extra space for temporary arrays.</p>
+    <div className="space-y-6 text-slate-300 leading-relaxed">
+      <div>
+        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+          <Info size={20} className="text-cyan-400" /> 1. What is Merge Sort?
+        </h3>
+        <p>
+          <strong>Merge Sort</strong> is a &quot;Divide and Conquer&quot; algorithm. It divides the input array into two halves, calls itself for the two halves, and then <strong>merges</strong> the two sorted halves.
+        </p>
+      </div>
+  
+      <div>
+        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+          <Activity size={20} className="text-yellow-400" /> 2. How it works
+        </h3>
+        <ul className="list-disc pl-5 space-y-2 marker:text-yellow-500">
+          <li><strong>Divide:</strong> Find the middle point to divide the array into two halves.</li>
+          <li><strong>Conquer:</strong> Recursively call MergeSort for the first half and the second half.</li>
+          <li><strong>Combine:</strong> Merge the two halves sorted in previous steps.</li>
+        </ul>
+      </div>
+  
+      <div>
+        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+          <Zap size={20} className="text-red-400" /> 3. Complexity Analysis
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-slate-800 p-3 rounded border border-slate-700">
+            <span className="text-slate-400 text-xs uppercase font-bold">Time Complexity</span>
+            <p className="text-lg font-bold text-green-400">O(n log n)</p>
+            <p className="text-xs text-slate-500">Very efficient (Log-linear). Guaranteed worst-case.</p>
+          </div>
+          <div className="bg-slate-800 p-3 rounded border border-slate-700">
+            <span className="text-slate-400 text-xs uppercase font-bold">Space Complexity</span>
+            <p className="text-lg font-bold text-yellow-400">O(n)</p>
+            <p className="text-xs text-slate-500">Requires extra space for temporary arrays.</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
-
-// --- HELPER FUNCTIONS ---
-const generateRandomArray = (length = ARRAY_SIZE) => Array.from({ length }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
-const generateSortedArray = (length = ARRAY_SIZE) => { const step = Math.floor((MAX_VALUE - MIN_VALUE) / length); return Array.from({ length }, (_, i) => MIN_VALUE + i * step); };
-const generateReverseSortedArray = (length = ARRAY_SIZE) => generateSortedArray(length).reverse();
-const generateNearlySortedArray = (length = ARRAY_SIZE) => { const arr = generateSortedArray(length); for (let i = 0; i < 3; i++) { const idx1 = Math.floor(Math.random() * length); const idx2 = Math.floor(Math.random() * length); [arr[idx1], arr[idx2]] = [arr[idx2], arr[idx1]]; } return arr; };
+  );
+  
+  // --- HELPER FUNCTIONS ---
+  const generateRandomArray = (length = ARRAY_SIZE) => Array.from({ length }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
+  const generateSortedArray = (length = ARRAY_SIZE) => { const step = Math.floor((MAX_VALUE - MIN_VALUE) / length); return Array.from({ length }, (_, i) => MIN_VALUE + i * step); };
+  const generateReverseSortedArray = (length = ARRAY_SIZE) => generateSortedArray(length).reverse();
+  const generateNearlySortedArray = (length = ARRAY_SIZE) => { const arr = generateSortedArray(length); for (let i = 0; i < 3; i++) { const idx1 = Math.floor(Math.random() * length); const idx2 = Math.floor(Math.random() * length); [arr[idx1], arr[idx2]] = [arr[idx2], arr[idx1]]; } return arr; };
 
 export default function MergeSortPage() {
   return (
@@ -141,7 +140,7 @@ function MergeSortVisualizer() {
       const val = Math.max(stepData.variables.compareVal1 || 0, stepData.variables.compareVal2 || 0);
       playCompareSound(val);
     } else if (stepData.type === 'OVERWRITE') {
-      playNote(600, 'square', 0.05); // Sound for overwrite
+      playNote(600, 'square', 0.05); 
     } else if (stepData.type === 'DIVIDE') {
       playNote(200, 'triangle', 0.1); 
     } else if (stepData.type === 'SORTED' && currentStep === timeline.length - 1) {
@@ -185,29 +184,16 @@ function MergeSortVisualizer() {
   const handleShare = () => { navigator.clipboard.writeText(window.location.href); alert("Copied URL to clipboard!"); };
   const handlePracticeModeToggle = () => { setIsPracticeMode(!isPracticeMode); setIsPlaying(false); setPracticeFeedback(null); };
 
-  // --- PRACTICE LOGIC (MERGE SORT) ---
+  // --- PRACTICE LOGIC ---
   const handlePracticeDecision = (decision: 'LEFT' | 'RIGHT') => {
-    if (currentStep >= timeline.length - 1) {
-        setPracticeFeedback({ type: 'success', msg: 'Finished!' });
-        return;
-    }
-
+    if (currentStep >= timeline.length - 1) { setPracticeFeedback({ type: 'success', msg: 'Finished!' }); return; }
     const currentData = timeline[currentStep];
-    
-    // Nếu không phải là bước so sánh, tự động bỏ qua
-    if (currentData.type !== 'COMPARE') {
-        handleStepForward();
-        return;
-    }
-
+    if (currentData.type !== 'COMPARE') { handleStepForward(); return; }
     const valL = currentData.variables.compareVal1 || 0;
     const valR = currentData.variables.compareVal2 || 0;
-    
     let isCorrect = false;
-    
     if (decision === 'LEFT' && valL <= valR) isCorrect = true;
     else if (decision === 'RIGHT' && valR < valL) isCorrect = true;
-
     if (isCorrect) {
       setPracticeScore(s => s + 10);
       setPracticeFeedback({ type: 'success', msg: 'Correct! +10 pts' });
@@ -229,7 +215,6 @@ function MergeSortVisualizer() {
   const getBarColor = (index: number) => {
     if (!timeline.length) return "bg-cyan-500";
     const { type, indices, variables } = currentData;
-    
     if (variables.left !== undefined && variables.right !== undefined) {
         if (index >= variables.left && index <= variables.right) {
             // In Range
@@ -237,7 +222,6 @@ function MergeSortVisualizer() {
             return "bg-slate-800 opacity-30"; 
         }
     }
-
     if (indices.includes(index)) {
         if (type === 'COMPARE') return "bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)]";
         if (type === 'OVERWRITE') return "bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]";
@@ -261,8 +245,6 @@ function MergeSortVisualizer() {
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-slate-950 text-white p-4 md:p-8 relative">
-      
-      {/* THEORY MODAL */}
       <AnimatePresence>
         {isTheoryOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setIsTheoryOpen(false)}>
@@ -274,7 +256,6 @@ function MergeSortVisualizer() {
         )}
       </AnimatePresence>
 
-      {/* TOP NAV */}
       <div className="w-full max-w-7xl mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <Link href="/" className="flex items-center text-slate-400 hover:text-white gap-2"><ArrowLeft size={20} /> Dashboard</Link>
         <div className="flex items-center gap-3">
@@ -291,38 +272,45 @@ function MergeSortVisualizer() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full max-w-7xl">
         <div className="xl:col-span-2 space-y-6">
             
-            {/* VISUALIZER */}
-            <div className="flex items-end justify-center gap-2 h-96 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
-                <AnimatePresence>
-                  {practiceFeedback && (
-                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-                       {practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}
-                     </motion.div>
-                  )}
-                </AnimatePresence>
-                {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
-                  <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
-                      <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 3}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
-                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-cyan-200">{value}</span>
-                      </motion.div>
-                      <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
-                  </div>
-                )) : <div className="text-slate-500">Initializing...</div>}
+            {/* CONTAINER CHỨA CẢ 2 VISUALIZERS */}
+            <div className="flex flex-col gap-4">
+                {/* 1. MẢNG */}
+                <div className="flex items-end justify-center gap-2 h-64 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
+                    <AnimatePresence>
+                    {practiceFeedback && (
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+                        {practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}
+                        </motion.div>
+                    )}
+                    </AnimatePresence>
+                    {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
+                    <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
+                        <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 1.5}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white shadow-sm">{value}</span>
+                        </motion.div>
+                        <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
+                    </div>
+                    )) : <div className="text-slate-500">Initializing...</div>}
+                </div>
+
+                {/* 2. CÂY (MERGE TREE) */}
+                <div className="h-96 w-full">
+                    <MergeTree data={currentData} array={currentData.arrayState} />
+                </div>
             </div>
 
             {/* LEGEND */}
             <div className="flex flex-wrap justify-center gap-6 pb-2">
                 <div className="flex items-center gap-2"><div className="w-3 h-3 bg-cyan-500 rounded"></div><span className="text-slate-400 text-xs">Unchanged</span></div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-purple-600 rounded"></div><span className="text-slate-400 text-xs">Active Range</span></div>
                 <div className="flex items-center gap-2"><div className="w-3 h-3 bg-yellow-400 rounded"></div><span className="text-slate-400 text-xs">Compare</span></div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-green-500 rounded"></div><span className="text-slate-400 text-xs">Overwrite (Sorted)</span></div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-slate-800 border border-slate-600 rounded"></div><span className="text-slate-400 text-xs">Out of Range</span></div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-green-500 rounded"></div><span className="text-slate-400 text-xs">Overwrite</span></div>
             </div>
 
             {/* CONTROL PANEL */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-6 relative overflow-hidden">
                 {isPracticeMode ? (
                   <div className="flex flex-col items-center justify-center space-y-4 py-2 animate-in fade-in duration-300">
-                    
                     {isFinished ? (
                         <div className="text-center space-y-2">
                             <h3 className="text-2xl font-bold text-green-400">🎉 Algorithm Finished!</h3>
@@ -336,7 +324,6 @@ function MergeSortVisualizer() {
                                <span className="text-white text-lg">Which value is smaller (to merge)?</span>
                             </div>
                             
-                            {/* Buttons for Compare */}
                             {currentData.type === 'COMPARE' ? (
                               <div className="flex gap-4">
                                 <button onClick={() => handlePracticeDecision('LEFT')} className="px-6 py-4 bg-blue-600 hover:bg-blue-500 hover:scale-105 transition-all rounded-xl font-bold shadow-lg flex items-center gap-2"><ArrowLeft /> Left: {currentData.variables.compareVal1}</button>
@@ -350,7 +337,6 @@ function MergeSortVisualizer() {
                             )}
                         </>
                     )}
-
                     <div className="absolute top-4 right-6 flex items-center gap-2 bg-slate-950 px-4 py-2 rounded-full border border-purple-500/30">
                        <Trophy className="text-yellow-500" size={18} /><span className="font-bold text-white">Score: {practiceScore}</span>
                     </div>

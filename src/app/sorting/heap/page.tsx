@@ -391,7 +391,28 @@ function HeapSortVisualizer() {
                   </>
                 )}
             </div>
+            {/* STATUS LOG */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row gap-6">
+                 <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2 text-cyan-400 text-sm font-bold uppercase tracking-wider"><Activity size={16} /> Status Log</div>
+                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 h-24 flex items-center"><p className="text-slate-300 text-sm font-mono leading-relaxed">{currentData.message}</p></div>
+                 </div>
+                 <div className="w-full md:w-64 space-y-2">
+                    <div className="flex items-center gap-2 text-purple-400 text-sm font-bold uppercase tracking-wider">Variables</div>
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Parent Idx</span><span className="text-purple-400 font-mono font-bold">{currentData.variables.parent ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Child Idx</span><span className="text-pink-400 font-mono font-bold">{currentData.variables.child ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Parent Val</span><span className="text-white font-mono font-bold">{currentData.variables.compareVal1 ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Child Val</span><span className="text-white font-mono font-bold">{currentData.variables.compareVal2 ?? '-'}</span></div>
+                    </div>
+                 </div>
+            </div>
+
+
         </div>
+
+        
+
 
         {/* RIGHT COLUMN */}
         <div className="xl:col-span-1 flex flex-col gap-6">
