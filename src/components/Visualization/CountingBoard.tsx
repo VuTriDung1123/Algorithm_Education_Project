@@ -5,12 +5,14 @@ import { AnimationStep } from "@/lib/algorithms/types";
 
 interface CountingBoardProps {
   data: AnimationStep;
+  onBucketClick?: (index: number) => void;
+  isPracticeMode?: boolean;
 }
 
-export default function CountingBoard({ data }: CountingBoardProps) {
+export default function CountingBoard({ data, onBucketClick, isPracticeMode }: CountingBoardProps) {
   const { variables, type } = data;
   const countArr = variables.countArr || [];
-  const activeIndex = variables.countIndex; // Index đang được tác động trong mảng count
+  const activeIndex = variables.countIndex; 
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900/30 rounded-xl border border-slate-800 p-4 overflow-x-auto custom-scrollbar">
@@ -18,31 +20,53 @@ export default function CountingBoard({ data }: CountingBoardProps) {
         
         <div className="flex gap-2 items-end justify-center min-w-max">
             {countArr.map((val, idx) => {
-                // Xác định màu sắc
                 let bgColor = "bg-slate-800";
                 let textColor = "text-slate-400";
                 let scale = 1;
+                let cursor = "cursor-default";
 
-                if (idx === activeIndex) {
+                // --- LOGIC MỚI: Ẩn Highlight & Fix số nhảy sớm ---
+                const shouldHighlight = idx === activeIndex && !isPracticeMode; 
+                
+                // Hack hiển thị: Nếu đang Practice, ta lùi số lại 1 bước để user cảm giác "chưa cộng"
+                let displayVal = val;
+                if (isPracticeMode && idx === activeIndex) {
+                    if (type === 'COUNT') displayVal = Math.max(0, val - 1); // Chưa đếm -> Trừ bớt 1
+                    if (type === 'PLACE') displayVal = val + 1; // Chưa lấy ra -> Cộng thêm 1
+                }
+                // ------------------------------------------------
+
+                if (shouldHighlight) {
                     scale = 1.1;
                     if (type === 'COUNT') { bgColor = "bg-yellow-500"; textColor = "text-black"; }
                     else if (type === 'ACCUMULATE') { bgColor = "bg-purple-500"; textColor = "text-white"; }
                     else if (type === 'PLACE') { bgColor = "bg-green-500"; textColor = "text-white"; }
                 }
 
+                if (isPracticeMode && onBucketClick) {
+                    cursor = "cursor-pointer hover:ring-2 hover:ring-white";
+                }
+
                 return (
-                    <div key={idx} className="flex flex-col items-center gap-1">
-                        {/* Giá trị count */}
+                    <button 
+                        key={idx} 
+                        onClick={() => isPracticeMode && onBucketClick && onBucketClick(idx)}
+                        disabled={!isPracticeMode}
+                        className={`flex flex-col items-center gap-1 ${cursor} transition-all focus:outline-none`}
+                    >
                         <motion.div 
                             className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-lg border border-slate-700 shadow-lg font-bold text-lg ${bgColor} ${textColor}`}
-                            animate={{ scale, backgroundColor: idx === activeIndex ? (type === 'COUNT' ? '#eab308' : type === 'ACCUMULATE' ? '#a855f7' : '#22c55e') : '#1e293b' }}
+                            // Chỉ animate màu khi không phải practice
+                            animate={{ 
+                                scale, 
+                                backgroundColor: shouldHighlight ? (type === 'COUNT' ? '#eab308' : type === 'ACCUMULATE' ? '#a855f7' : '#22c55e') : '#1e293b' 
+                            }}
                         >
-                            {val}
+                            {displayVal}
                         </motion.div>
                         
-                        {/* Chỉ số (đại diện cho Value của mảng gốc) */}
                         <span className="text-[10px] md:text-xs font-mono text-slate-500">{idx}</span>
-                    </div>
+                    </button>
                 );
             })}
         </div>
