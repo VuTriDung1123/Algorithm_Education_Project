@@ -9,4 +9,5 @@ export interface AnimationStep {
   type: ActionType;
   indices: number[]; // Vị trí các phần tử đang tương tác (ví dụ: [0, 1])
   arrayState: number[]; // Trạng thái mảng tại thời điểm đó (để backup/undo)
+  sortedIndices: number[]; // Vị trí các phần tử đã được sắp xếp xong
 }
