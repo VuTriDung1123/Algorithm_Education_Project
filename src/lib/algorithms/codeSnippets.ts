@@ -4,11 +4,13 @@ interface CodeSnippet {
   code: string;
   highlight: {
     COMPARE: number;
-    SWAP: number;
+    SWAP?: number;   // Dấu ? nghĩa là có thể không có (Insertion Sort ít dùng Swap)
+    SHIFT?: number;  // Dành cho Insertion Sort
+    INSERT?: number; // Dành cho Insertion Sort
   };
 }
 
-// --- BUBBLE SORT (CŨ) ---
+// --- 1. BUBBLE SORT ---
 export const bubbleSortCode: Record<Language, CodeSnippet> = {
   'Pseudo': {
     code: `procedure bubbleSort(arr):
@@ -91,7 +93,7 @@ end procedure`,
   }
 };
 
-// --- SELECTION SORT (MỚI) ---
+// --- 2. SELECTION SORT ---
 export const selectionSortCode: Record<Language, CodeSnippet> = {
   'Pseudo': {
     code: `procedure selectionSort(arr):
@@ -108,7 +110,7 @@ export const selectionSortCode: Record<Language, CodeSnippet> = {
     end if
   end for
 end procedure`,
-    highlight: { COMPARE: 5, SWAP: 9 } // Dòng so sánh và dòng đổi chỗ
+    highlight: { COMPARE: 5, SWAP: 9 }
   },
   'C++': {
     code: `void selectionSort(int arr[], int n) {
@@ -180,5 +182,90 @@ end procedure`,
     }
 }`,
     highlight: { COMPARE: 5, SWAP: 8 }
+  }
+};
+
+// --- 3. INSERTION SORT (MỚI) ---
+export const insertionSortCode: Record<Language, CodeSnippet> = {
+  'Pseudo': {
+    code: `procedure insertionSort(arr):
+  for i = 1 to length(arr)-1 do
+    key = arr[i]
+    j = i - 1
+    while j >= 0 and arr[j] > key do
+      arr[j + 1] = arr[j]
+      j = j - 1
+    end while
+    arr[j + 1] = key
+  end for
+end procedure`,
+    highlight: { COMPARE: 4, SHIFT: 5, INSERT: 7 }
+  },
+  'C++': {
+    code: `void insertionSort(int arr[], int n) {
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+}`,
+    highlight: { COMPARE: 4, SHIFT: 5, INSERT: 8 }
+  },
+  'C#': {
+    code: `void InsertionSort(int[] arr) {
+    for (int i = 1; i < arr.Length; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}`,
+    highlight: { COMPARE: 4, SHIFT: 5, INSERT: 8 }
+  },
+  'Java': {
+    code: `void insertionSort(int arr[]) {
+    for (int i = 1; i < arr.length; ++i) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+}`,
+    highlight: { COMPARE: 4, SHIFT: 5, INSERT: 8 }
+  },
+  'Python': {
+    code: `def insertion_sort(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i-1
+        while j >= 0 and key < arr[j]:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key`,
+    highlight: { COMPARE: 4, SHIFT: 5, INSERT: 7 }
+  },
+  'Go': {
+    code: `func InsertionSort(arr []int) {
+    for i := 1; i < len(arr); i++ {
+        key := arr[i]
+        j := i - 1
+        for j >= 0 && arr[j] > key {
+            arr[j+1] = arr[j]
+            j = j - 1
+        }
+        arr[j+1] = key
+    }
+}`,
+    highlight: { COMPARE: 4, SHIFT: 5, INSERT: 8 }
   }
 };
