@@ -79,7 +79,7 @@ export const algorithmCategories: AlgorithmCategory[] = [
       { title: "Insertion Sort", description: "Sắp xếp chèn.", href: "/sorting/insertion", tags: ["O(n²)"], isReady: true },//OPEN
       { title: "Merge Sort", description: "Sắp xếp trộn (Chia để trị).", href: "/sorting/merge", tags: ["O(n log n)"], isReady: true },//OPEN
       { title: "Quick Sort", description: "Sắp xếp nhanh (Phân hoạch).", href: "/sorting/quick", tags: ["O(n log n)"], isReady: true }, // OPEN
-      { title: "Heap Sort", description: "Sắp xếp vun đống.", href: "/sorting/heap", tags: ["O(n log n)"], isReady: false },
+      { title: "Heap Sort", description: "Sắp xếp vun đống.", href: "/sorting/heap", tags: ["O(n log n)"], isReady: true }, // OPEN
       { title: "Counting Sort", description: "Đếm số lần xuất hiện.", href: "/sorting/counting", tags: ["Linear"], isReady: false },
       { title: "Radix Sort", description: "Sắp xếp theo cơ số.", href: "/sorting/radix", tags: ["Linear"], isReady: false },
       { title: "Bucket Sort", description: "Chia vào các xô (bucket).", href: "/sorting/bucket", tags: ["Distribution"], isReady: false },

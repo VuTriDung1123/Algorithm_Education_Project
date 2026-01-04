@@ -464,3 +464,107 @@ def quick_sort(arr, low, high):
     highlight: { COMPARE: 5, SWAP: 7, PIVOT: 2 }
   }
 };
+
+
+// --- 6. HEAP SORT ---
+export const heapSortCode: Record<Language, CodeSnippet> = {
+  'Pseudo': {
+    code: `procedure heapSort(arr):
+  n = length(arr)
+  // Build max heap
+  for i = n/2 - 1 down to 0:
+    heapify(arr, n, i)
+  // Extract elements
+  for i = n - 1 down to 0:
+    swap arr[0] with arr[i]
+    heapify(arr, i, 0)
+end procedure
+
+procedure heapify(arr, n, i):
+  largest = i
+  l = 2*i + 1
+  r = 2*i + 2
+  if l < n and arr[l] > arr[largest]: largest = l
+  if r < n and arr[r] > arr[largest]: largest = r
+  if largest != i:
+    swap arr[i] with arr[largest]
+    heapify(arr, n, largest)`,
+    highlight: { COMPARE: 19, SWAP: 22 } // Highlight dòng so sánh và swap trong heapify
+  },
+  'C++': {
+    code: `void heapify(int arr[], int n, int i) {
+    int largest = i;
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+    if (l < n && arr[l] > arr[largest]) largest = l;
+    if (r < n && arr[r] > arr[largest]) largest = r;
+    if (largest != i) {
+        swap(arr[i], arr[largest]);
+        heapify(arr, n, largest);
+    }
+}
+void heapSort(int arr[], int n) {
+    for (int i = n / 2 - 1; i >= 0; i--) heapify(arr, n, i);
+    for (int i = n - 1; i > 0; i--) {
+        swap(arr[0], arr[i]);
+        heapify(arr, i, 0);
+    }
+}`,
+    highlight: { COMPARE: 5, SWAP: 8 }
+  },
+  'C#': {
+    code: `void Heapify(int[] arr, int n, int i) {
+    int largest = i;
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+    if (l < n && arr[l] > arr[largest]) largest = l;
+    if (r < n && arr[r] > arr[largest]) largest = r;
+    if (largest != i) {
+        int temp = arr[i]; arr[i] = arr[largest]; arr[largest] = temp;
+        Heapify(arr, n, largest);
+    }
+}
+void HeapSort(int[] arr) { ... }`,
+    highlight: { COMPARE: 5, SWAP: 8 }
+  },
+  'Java': {
+    code: `void heapify(int arr[], int n, int i) {
+    int largest = i;
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+    if (l < n && arr[l] > arr[largest]) largest = l;
+    if (r < n && arr[r] > arr[largest]) largest = r;
+    if (largest != i) {
+        int swap = arr[i]; arr[i] = arr[largest]; arr[largest] = swap;
+        heapify(arr, n, largest);
+    }
+}`,
+    highlight: { COMPARE: 5, SWAP: 8 }
+  },
+  'Python': {
+    code: `def heapify(arr, n, i):
+    largest = i
+    l = 2 * i + 1
+    r = 2 * i + 2
+    if l < n and arr[l] > arr[largest]: largest = l
+    if r < n and arr[r] > arr[largest]: largest = r
+    if largest != i:
+        arr[i], arr[largest] = arr[largest], arr[i]
+        heapify(arr, n, largest)`,
+    highlight: { COMPARE: 5, SWAP: 8 }
+  },
+  'Go': {
+    code: `func heapify(arr []int, n int, i int) {
+    largest := i
+    l := 2*i + 1
+    r := 2*i + 2
+    if l < n && arr[l] > arr[largest] { largest = l }
+    if r < n && arr[r] > arr[largest] { largest = r }
+    if largest != i {
+        arr[i], arr[largest] = arr[largest], arr[i]
+        heapify(arr, n, largest)
+    }
+}`,
+    highlight: { COMPARE: 5, SWAP: 8 }
+  }
+};

@@ -2,12 +2,12 @@ export type ActionType =
   | 'COMPARE' 
   | 'SWAP'    
   | 'SORTED'
-  | 'SHIFT'   // Insertion
-  | 'INSERT'  // Insertion
-  | 'DIVIDE'  // Merge
-  | 'MERGE'   // Merge
-  | 'OVERWRITE' // Merge
-  | 'PIVOT';  // <--- MỚI: Quick Sort (Chọn điểm chốt)
+  | 'SHIFT'   
+  | 'INSERT'  
+  | 'DIVIDE'  
+  | 'MERGE'   
+  | 'OVERWRITE'
+  | 'PIVOT'; 
 
 export interface AnimationStep {
   type: ActionType;
@@ -24,10 +24,13 @@ export interface AnimationStep {
     mid?: number;
     minIdx?: number;
     keyVal?: number;
-    pivotIdx?: number; // <--- MỚI: Vị trí của Pivot
+    pivotIdx?: number;
     compareVal1?: number;
     compareVal2?: number;
     overwriteVal?: number;
+    heapSize?: number; // <--- MỚI: Kích thước vùng Heap hiện tại
+    parent?: number;   // <--- MỚI: Để highlight node cha
+    child?: number;    // <--- MỚI: Để highlight node con
   };
   counts: {
     comparisons: number;
