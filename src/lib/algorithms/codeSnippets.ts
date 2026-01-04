@@ -10,6 +10,7 @@ interface CodeSnippet {
     DIVIDE?: number;     // <--- MỚI: Cho Merge Sort
     MERGE?: number;      // <--- MỚI: Cho Merge Sort
     OVERWRITE?: number;  // <--- MỚI: Cho Merge Sort
+    PIVOT?: number;      // <--- MỚI: Cho Quick Sort
 
   };
 }
@@ -348,5 +349,118 @@ void mergeSort(int arr[], int l, int r) {
     return merge(MergeSort(arr[:mid]), MergeSort(arr[mid:]))
 }`,
     highlight: { COMPARE: 3, DIVIDE: 2, MERGE: 3, OVERWRITE: 3 }
+  }
+};
+
+
+// --- 5. QUICK SORT ---
+export const quickSortCode: Record<Language, CodeSnippet> = {
+  'Pseudo': {
+    code: `procedure quickSort(arr, low, high):
+  if low < high:
+    pi = partition(arr, low, high)
+    quickSort(arr, low, pi - 1)
+    quickSort(arr, pi + 1, high)
+  end if
+end procedure
+
+procedure partition(arr, low, high):
+  pivot = arr[high]
+  i = low - 1
+  for j = low to high - 1:
+    if arr[j] < pivot:
+      i++
+      swap arr[i] with arr[j]
+  swap arr[i + 1] with arr[high]
+  return i + 1`,
+    highlight: { COMPARE: 12, SWAP: 14, PIVOT: 10 }
+  },
+  'C++': {
+    code: `int partition(int arr[], int low, int high) {
+    int pivot = arr[high];
+    int i = (low - 1);
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            swap(&arr[i], &arr[j]);
+        }
+    }
+    swap(&arr[i + 1], &arr[high]);
+    return (i + 1);
+}
+void quickSort(int arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
+}`,
+    highlight: { COMPARE: 5, SWAP: 7, PIVOT: 2 }
+  },
+  'C#': {
+    code: `int Partition(int[] arr, int low, int high) {
+    int pivot = arr[high];
+    int i = (low - 1);
+    for (int j = low; j < high; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            // swap arr[i] and arr[j]
+            int temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+        }
+    }
+    // swap arr[i+1] and arr[high]
+    int t = arr[i+1]; arr[i+1] = arr[high]; arr[high] = t;
+    return i + 1;
+}
+void QuickSort(int[] arr, int low, int high) { ... }`,
+    highlight: { COMPARE: 5, SWAP: 8, PIVOT: 2 }
+  },
+  'Java': {
+    code: `int partition(int arr[], int low, int high) {
+    int pivot = arr[high];
+    int i = (low - 1);
+    for (int j = low; j < high; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            int temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+        }
+    }
+    int temp = arr[i+1]; arr[i+1] = arr[high]; arr[high] = temp;
+    return i + 1;
+}`,
+    highlight: { COMPARE: 5, SWAP: 7, PIVOT: 2 }
+  },
+  'Python': {
+    code: `def partition(arr, low, high):
+    pivot = arr[high]
+    i = low - 1
+    for j in range(low, high):
+        if arr[j] < pivot:
+            i = i + 1
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i + 1], arr[high] = arr[high], arr[i + 1]
+    return i + 1
+
+def quick_sort(arr, low, high):
+    if low < high:
+        pi = partition(arr, low, high)
+        quick_sort(arr, low, pi - 1)
+        quick_sort(arr, pi + 1, high)`,
+    highlight: { COMPARE: 5, SWAP: 7, PIVOT: 2 }
+  },
+  'Go': {
+    code: `func partition(arr []int, low, high int) int {
+    pivot := arr[high]
+    i := low - 1
+    for j := low; j < high; j++ {
+        if arr[j] < pivot {
+            i++
+            arr[i], arr[j] = arr[j], arr[i]
+        }
+    }
+    arr[i+1], arr[high] = arr[high], arr[i+1]
+    return i + 1
+}`,
+    highlight: { COMPARE: 5, SWAP: 7, PIVOT: 2 }
   }
 };

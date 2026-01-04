@@ -2,11 +2,12 @@ export type ActionType =
   | 'COMPARE' 
   | 'SWAP'    
   | 'SORTED'
-  | 'SHIFT'   // Insertion Sort
-  | 'INSERT'  // Insertion Sort
-  | 'DIVIDE'  // <--- MỚI: Merge Sort (Chia)
-  | 'MERGE'   // <--- MỚI: Merge Sort (Bắt đầu gộp)
-  | 'OVERWRITE'; // <--- MỚI: Merge Sort (Ghi giá trị vào mảng chính)
+  | 'SHIFT'   // Insertion
+  | 'INSERT'  // Insertion
+  | 'DIVIDE'  // Merge
+  | 'MERGE'   // Merge
+  | 'OVERWRITE' // Merge
+  | 'PIVOT';  // <--- MỚI: Quick Sort (Chọn điểm chốt)
 
 export interface AnimationStep {
   type: ActionType;
@@ -17,18 +18,19 @@ export interface AnimationStep {
   variables: {
     i?: number;
     j?: number;
-    k?: number;       // <--- MỚI: Index trong mảng chính khi merge
-    left?: number;    // <--- MỚI: Biên trái
-    right?: number;   // <--- MỚI: Biên phải
-    mid?: number;     // <--- MỚI: Điểm giữa
+    k?: number;
+    left?: number;
+    right?: number;
+    mid?: number;
     minIdx?: number;
     keyVal?: number;
+    pivotIdx?: number; // <--- MỚI: Vị trí của Pivot
     compareVal1?: number;
     compareVal2?: number;
-    overwriteVal?: number; // <--- MỚI: Giá trị sắp được ghi vào
+    overwriteVal?: number;
   };
   counts: {
     comparisons: number;
-    swaps: number; // Với Merge Sort, ta có thể đếm số lần Overwrite vào mảng chính
+    swaps: number;
   };
 }
