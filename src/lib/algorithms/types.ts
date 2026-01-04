@@ -12,12 +12,12 @@ export interface AnimationStep {
   variables: {
     i: number;
     j: number;
+    minIdx?: number;      // <--- THÊM DÒNG NÀY (Dấu ? nghĩa là có thể không có, vì Bubble Sort không dùng)
     compareVal1?: number;
     compareVal2?: number;
   };
-  // --- MỚI: BỘ ĐẾM ---
   counts: {
-    comparisons: number; // Tổng số lần so sánh tính đến bước này
-    swaps: number;       // Tổng số lần đổi chỗ tính đến bước này
+    comparisons: number;
+    swaps: number;
   };
 }

@@ -2,13 +2,13 @@ export type Language = 'Pseudo' | 'C++' | 'C#' | 'Java' | 'Python' | 'Go';
 
 interface CodeSnippet {
   code: string;
-  // Map hành động với số dòng cần highlight (Bắt đầu từ 0)
   highlight: {
     COMPARE: number;
     SWAP: number;
   };
 }
 
+// --- BUBBLE SORT (CŨ) ---
 export const bubbleSortCode: Record<Language, CodeSnippet> = {
   'Pseudo': {
     code: `procedure bubbleSort(arr):
@@ -50,7 +50,7 @@ end procedure`,
         }
     }
 }`,
-    highlight: { COMPARE: 4, SWAP: 6 } // C# dòng swap tốn nhiều dòng hơn, ta highlight dòng đầu
+    highlight: { COMPARE: 4, SWAP: 6 } 
   },
   'Java': {
     code: `void bubbleSort(int arr[]) {
@@ -88,5 +88,97 @@ end procedure`,
     }
 }`,
     highlight: { COMPARE: 4, SWAP: 5 }
+  }
+};
+
+// --- SELECTION SORT (MỚI) ---
+export const selectionSortCode: Record<Language, CodeSnippet> = {
+  'Pseudo': {
+    code: `procedure selectionSort(arr):
+  n = length(arr)
+  for i = 0 to n - 2 do
+    minIdx = i
+    for j = i + 1 to n - 1 do
+      if arr[j] < arr[minIdx] then
+        minIdx = j
+      end if
+    end for
+    if minIdx != i then
+      swap(arr[i], arr[minIdx])
+    end if
+  end for
+end procedure`,
+    highlight: { COMPARE: 5, SWAP: 9 } // Dòng so sánh và dòng đổi chỗ
+  },
+  'C++': {
+    code: `void selectionSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int min_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        }
+        if (min_idx != i)
+            swap(arr[min_idx], arr[i]);
+    }
+}`,
+    highlight: { COMPARE: 4, SWAP: 7 }
+  },
+  'C#': {
+    code: `void SelectionSort(int[] arr) {
+    int n = arr.Length;
+    for (int i = 0; i < n - 1; i++) {
+        int min_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        }
+        int temp = arr[min_idx];
+        arr[min_idx] = arr[i];
+        arr[i] = temp;
+    }
+}`,
+    highlight: { COMPARE: 5, SWAP: 8 }
+  },
+  'Java': {
+    code: `void selectionSort(int arr[]) {
+    int n = arr.length;
+    for (int i = 0; i < n - 1; i++) {
+        int min_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        }
+        int temp = arr[min_idx];
+        arr[min_idx] = arr[i];
+        arr[i] = temp;
+    }
+}`,
+    highlight: { COMPARE: 5, SWAP: 8 }
+  },
+  'Python': {
+    code: `def selection_sort(arr):
+    for i in range(len(arr)):
+        min_idx = i
+        for j in range(i+1, len(arr)):
+            if arr[j] < arr[min_idx]:
+                min_idx = j
+        arr[i], arr[min_idx] = arr[min_idx], arr[i]`,
+    highlight: { COMPARE: 4, SWAP: 6 }
+  },
+  'Go': {
+    code: `func SelectionSort(arr []int) {
+    n := len(arr)
+    for i := 0; i < n-1; i++ {
+        minIdx := i
+        for j := i + 1; j < n; j++ {
+            if arr[j] < arr[minIdx] {
+                minIdx = j
+            }
+        }
+        arr[i], arr[minIdx] = arr[minIdx], arr[i]
+    }
+}`,
+    highlight: { COMPARE: 5, SWAP: 8 }
   }
 };
