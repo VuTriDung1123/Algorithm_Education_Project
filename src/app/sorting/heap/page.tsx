@@ -10,69 +10,71 @@ import {
   Hash, ArrowRightLeft, Clock, Zap,
   Info, X, BookOpen, 
   Volume2, VolumeX, Share2, Gamepad2, Trophy, ThumbsDown,
-  ArrowUp, ArrowDown // Icon mới
+  ArrowUp, ArrowDown
 } from "lucide-react"; 
 import Link from "next/link";
 import { generateHeapSortTimeline } from "@/lib/algorithms/heapSort";
 import { AnimationStep } from "@/lib/algorithms/types";
 import { heapSortCode, Language } from "@/lib/algorithms/codeSnippets";
 import { playCompareSound, playSwapSound, playSuccessSound, playErrorSound, playNote } from "@/lib/sound";
+// --- IMPORT COMPONENT CÂY MỚI ---
+import HeapTree from "@/components/Visualization/HeapTree";
 
 // --- 1. CONFIG ---
-const ARRAY_SIZE = 15;
+const ARRAY_SIZE = 15; // Giữ 15 là đẹp cho cây 4 tầng
 const MIN_VALUE = 10;
-const MAX_VALUE = 100;
+const MAX_VALUE = 99; // 2 chữ số cho đẹp trên cây
 const ANIMATION_SPEED_MIN = 10;
 const ANIMATION_SPEED_MAX = 500;
 
-// --- THEORY COMPONENT ---
+// ... (Giữ nguyên HeapSortTheory và Helper Functions như cũ) ...
 const HeapSortTheory = () => (
-  <div className="space-y-6 text-slate-300 leading-relaxed">
-    <div>
-      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-        <Info size={20} className="text-cyan-400" /> 1. What is Heap Sort?
-      </h3>
-      <p>
-        <strong>Heap Sort</strong> uses a binary heap data structure. It divides its input into a sorted and an unsorted region, and it iteratively shrinks the unsorted region by extracting the largest element and moving that to the sorted region.
-      </p>
-    </div>
-
-    <div>
-      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-        <Activity size={20} className="text-yellow-400" /> 2. How it works
-      </h3>
-      <ul className="list-disc pl-5 space-y-2 marker:text-yellow-500">
-        <li><strong>Build Max Heap:</strong> Organize the array so that every parent node is larger than its children. The largest element is now at the root (index 0).</li>
-        <li><strong>Swap & Extract:</strong> Swap the root (largest) with the last item of the heap. Reduce heap size by 1.</li>
-        <li><strong>Heapify:</strong> Repair the heap property for the new root. Repeat until heap size is 1.</li>
-      </ul>
-    </div>
-
-    <div>
-      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-        <Zap size={20} className="text-red-400" /> 3. Complexity Analysis
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-slate-800 p-3 rounded border border-slate-700">
-          <span className="text-slate-400 text-xs uppercase font-bold">Time Complexity</span>
-          <p className="text-lg font-bold text-green-400">O(n log n)</p>
-          <p className="text-xs text-slate-500">Consistent performance (Best, Average, Worst).</p>
-        </div>
-        <div className="bg-slate-800 p-3 rounded border border-slate-700">
-          <span className="text-slate-400 text-xs uppercase font-bold">Space Complexity</span>
-          <p className="text-lg font-bold text-green-400">O(1)</p>
-          <p className="text-xs text-slate-500">In-place sorting.</p>
+    <div className="space-y-6 text-slate-300 leading-relaxed">
+      <div>
+        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+          <Info size={20} className="text-cyan-400" /> 1. What is Heap Sort?
+        </h3>
+        <p>
+          <strong>Heap Sort</strong> uses a binary heap data structure. It divides its input into a sorted and an unsorted region, and it iteratively shrinks the unsorted region by extracting the largest element and moving that to the sorted region.
+        </p>
+      </div>
+  
+      <div>
+        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+          <Activity size={20} className="text-yellow-400" /> 2. How it works
+        </h3>
+        <ul className="list-disc pl-5 space-y-2 marker:text-yellow-500">
+          <li><strong>Build Max Heap:</strong> Organize the array so that every parent node is larger than its children. The largest element is now at the root (index 0).</li>
+          <li><strong>Swap & Extract:</strong> Swap the root (largest) with the last item of the heap. Reduce heap size by 1.</li>
+          <li><strong>Heapify:</strong> Repair the heap property for the new root. Repeat until heap size is 1.</li>
+        </ul>
+      </div>
+  
+      <div>
+        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+          <Zap size={20} className="text-red-400" /> 3. Complexity Analysis
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-slate-800 p-3 rounded border border-slate-700">
+            <span className="text-slate-400 text-xs uppercase font-bold">Time Complexity</span>
+            <p className="text-lg font-bold text-green-400">O(n log n)</p>
+            <p className="text-xs text-slate-500">Consistent performance (Best, Average, Worst).</p>
+          </div>
+          <div className="bg-slate-800 p-3 rounded border border-slate-700">
+            <span className="text-slate-400 text-xs uppercase font-bold">Space Complexity</span>
+            <p className="text-lg font-bold text-green-400">O(1)</p>
+            <p className="text-xs text-slate-500">In-place sorting.</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
-
-// --- HELPER FUNCTIONS ---
-const generateRandomArray = (length = ARRAY_SIZE) => Array.from({ length }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
-const generateSortedArray = (length = ARRAY_SIZE) => { const step = Math.floor((MAX_VALUE - MIN_VALUE) / length); return Array.from({ length }, (_, i) => MIN_VALUE + i * step); };
-const generateReverseSortedArray = (length = ARRAY_SIZE) => generateSortedArray(length).reverse();
-const generateNearlySortedArray = (length = ARRAY_SIZE) => { const arr = generateSortedArray(length); for (let i = 0; i < 3; i++) { const idx1 = Math.floor(Math.random() * length); const idx2 = Math.floor(Math.random() * length); [arr[idx1], arr[idx2]] = [arr[idx2], arr[idx1]]; } return arr; };
+  );
+  
+  // --- HELPER FUNCTIONS ---
+  const generateRandomArray = (length = ARRAY_SIZE) => Array.from({ length }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
+  const generateSortedArray = (length = ARRAY_SIZE) => { const step = Math.floor((MAX_VALUE - MIN_VALUE) / length); return Array.from({ length }, (_, i) => MIN_VALUE + i * step); };
+  const generateReverseSortedArray = (length = ARRAY_SIZE) => generateSortedArray(length).reverse();
+  const generateNearlySortedArray = (length = ARRAY_SIZE) => { const arr = generateSortedArray(length); for (let i = 0; i < 3; i++) { const idx1 = Math.floor(Math.random() * length); const idx2 = Math.floor(Math.random() * length); [arr[idx1], arr[idx2]] = [arr[idx2], arr[idx1]]; } return arr; };
 
 export default function HeapSortPage() {
   return (
@@ -136,8 +138,7 @@ function HeapSortVisualizer() {
     const stepData = timeline[currentStep];
     if (!stepData) return;
     if (stepData.type === 'COMPARE') {
-      const val = Math.max(stepData.variables.compareVal1 || 0, stepData.variables.compareVal2 || 0);
-      playCompareSound(val);
+      playCompareSound(0);
     } else if (stepData.type === 'SWAP') {
       playSwapSound();
     } else if (stepData.type === 'SORTED' && currentStep === timeline.length - 1) {
@@ -167,7 +168,7 @@ function HeapSortVisualizer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, speed, timeline.length, currentStep, isPracticeMode]);
 
-  // --- HANDLERS ---
+  // --- HANDLERS (Copy giữ nguyên từ trước) ---
   const handleRandomize = () => loadNewArray(generateRandomArray());
   const handleSorted = () => loadNewArray(generateSortedArray());
   const handleReverse = () => loadNewArray(generateReverseSortedArray());
@@ -181,63 +182,30 @@ function HeapSortVisualizer() {
   const handleShare = () => { navigator.clipboard.writeText(window.location.href); alert("Copied URL to clipboard!"); };
   const handlePracticeModeToggle = () => { setIsPracticeMode(!isPracticeMode); setIsPlaying(false); setPracticeFeedback(null); };
 
-  // --- PRACTICE LOGIC (HEAP SORT) ---
   const handlePracticeDecision = (decision: 'SWAP' | 'NO' | 'EXTRACT') => {
-    if (currentStep >= timeline.length - 1) {
-        setPracticeFeedback({ type: 'success', msg: 'Finished!' });
-        return;
-    }
-
+    if (currentStep >= timeline.length - 1) { setPracticeFeedback({ type: 'success', msg: 'Finished!' }); return; }
     const currentData = timeline[currentStep];
     const valParent = currentData.variables.compareVal1 || 0;
     const valChild = currentData.variables.compareVal2 || 0;
-    
     let isCorrect = false;
-
-    // Logic:
-    // COMPARE (Trong Heapify): Con > Cha -> SWAP. Con <= Cha -> NO (Keep).
-    // SWAP (Extract): Nếu bước này là SWAP (đổi chỗ 0 với end) -> EXTRACT.
-    
     if (currentData.type === 'COMPARE') {
         const shouldSwap = valChild > valParent;
         if (decision === 'SWAP' && shouldSwap) isCorrect = true;
         else if (decision === 'NO' && !shouldSwap) isCorrect = true;
-    } 
-    else if (currentData.type === 'SWAP') {
-        // Đây là bước Extract (vì trong heapify cũng có swap, nhưng thường nó đi sau compare)
-        // Tuy nhiên, logic generator của ta: Compare -> Swap (trong heapify).
-        // Hoặc Swap (trong Extract phase).
-        // Để đơn giản hóa: Nếu máy hiện nút Extract -> Bấm Extract là đúng.
-        // Nếu máy hiện nút Swap/No -> Thì bấm theo logic so sánh.
-        
-        // Ta cần phân biệt Swap của Heapify hay Swap của Extract.
-        // Swap Extract luôn đổi chỗ index 0 với index cuối.
+    } else if (currentData.type === 'SWAP') {
         if (currentData.indices[0] === 0 && currentData.indices[1] === currentData.variables.heapSize) {
-             // Đây là Extract
              if (decision === 'EXTRACT') isCorrect = true;
         } else {
-             // Đây là Swap của Heapify (Do trước đó đã Compare và quyết định Swap) -> Auto pass vì user đã đoán ở bước Compare rồi
-             // Nhưng ở đây ta cứ cho phép bấm SWAP tiếp cũng được
              if (decision === 'SWAP') isCorrect = true;
         }
-    }
-    else {
-        handleStepForward();
-        return;
-    }
-
+    } else { handleStepForward(); return; }
     if (isCorrect) {
       setPracticeScore(s => s + 10);
       setPracticeFeedback({ type: 'success', msg: 'Correct! +10 pts' });
       playSuccessSound();
-      
-      // Auto move
-      // Nếu là Extract (SWAP) -> Next
-      // Nếu là Compare và cần Swap -> Jump 2 bước qua animation swap
       const shouldSwap = valChild > valParent;
       if (currentData.type === 'COMPARE' && shouldSwap && currentStep < timeline.length - 2) setCurrentStep(c => c + 2);
       else handleStepForward();
-
     } else {
       setPracticeScore(s => Math.max(0, s - 5));
       setPracticeFeedback({ type: 'error', msg: 'Wrong decision.' });
@@ -253,28 +221,17 @@ function HeapSortVisualizer() {
   const getBarColor = (index: number) => {
     if (!timeline.length) return "bg-cyan-500";
     const { type, indices, variables, sortedIndices } = currentData;
-    
-    // Sorted Final
-    if (sortedIndices.includes(index)) return "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]";
-
-    // Heap Area (Trong vùng heapSize)
     const heapSize = variables.heapSize ?? 0;
     const isHeapArea = index < heapSize;
-
-    // Highlight Parent & Child
-    if (index === variables.parent) return "bg-purple-600 shadow-[0_0_15px_rgba(147,51,234,0.7)] z-10"; // Parent
-    if (index === variables.child) return "bg-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.7)] z-10"; // Child
-
-    // Actions
+    if (sortedIndices.includes(index)) return "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]";
+    if (index === variables.parent) return "bg-purple-600 shadow-[0_0_15px_rgba(147,51,234,0.7)] z-10";
+    if (index === variables.child) return "bg-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.7)] z-10";
     if (indices.includes(index)) {
         if (type === 'COMPARE') return "bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)]";
         if (type === 'SWAP') return "bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.6)]";
     }
-
-    // Dim phần tử ngoài heap (nhưng chưa sorted indices - trường hợp hiếm vì sortedIndices cover rồi)
     if (!isHeapArea && !sortedIndices.includes(index)) return "bg-slate-800 opacity-50";
-
-    return "bg-cyan-600"; // Màu mặc định cho Heap Node
+    return "bg-cyan-600";
   };
 
   const getActiveLine = () => {
@@ -292,7 +249,6 @@ function HeapSortVisualizer() {
   return (
     <main className="flex min-h-screen flex-col items-center bg-slate-950 text-white p-4 md:p-8 relative">
       
-      {/* THEORY MODAL */}
       <AnimatePresence>
         {isTheoryOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setIsTheoryOpen(false)}>
@@ -304,7 +260,6 @@ function HeapSortVisualizer() {
         )}
       </AnimatePresence>
 
-      {/* TOP NAV */}
       <div className="w-full max-w-7xl mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <Link href="/" className="flex items-center text-slate-400 hover:text-white gap-2"><ArrowLeft size={20} /> Dashboard</Link>
         <div className="flex items-center gap-3">
@@ -321,23 +276,33 @@ function HeapSortVisualizer() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full max-w-7xl">
         <div className="xl:col-span-2 space-y-6">
             
-            {/* VISUALIZER */}
-            <div className="flex items-end justify-center gap-2 h-96 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
-                <AnimatePresence>
-                  {practiceFeedback && (
-                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-                       {practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}
-                     </motion.div>
-                  )}
-                </AnimatePresence>
-                {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
-                  <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
-                      <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 3}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
-                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white shadow-sm">{value}</span>
-                      </motion.div>
-                      <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
-                  </div>
-                )) : <div className="text-slate-500">Initializing...</div>}
+            {/* CONTAINER VISUALIZER MỚI: CHỨA CẢ 2 PHẦN */}
+            <div className="flex flex-col gap-4">
+                
+                {/* 1. ARRAY BAR CHART */}
+                <div className="flex items-end justify-center gap-2 h-64 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
+                    <AnimatePresence>
+                    {practiceFeedback && (
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+                        {practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}
+                        </motion.div>
+                    )}
+                    </AnimatePresence>
+                    {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
+                    <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
+                        <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 1.5}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white shadow-sm">{value}</span>
+                        </motion.div>
+                        <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
+                    </div>
+                    )) : <div className="text-slate-500">Initializing...</div>}
+                </div>
+
+                {/* 2. TREE VISUALIZATION (MỚI) */}
+                <div className="h-96 w-full">
+                    <HeapTree data={currentData} array={currentData.arrayState} />
+                </div>
+
             </div>
 
             {/* LEGEND */}
@@ -352,7 +317,6 @@ function HeapSortVisualizer() {
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-6 relative overflow-hidden">
                 {isPracticeMode ? (
                   <div className="flex flex-col items-center justify-center space-y-4 py-2 animate-in fade-in duration-300">
-                    
                     {isFinished ? (
                         <div className="text-center space-y-2">
                             <h3 className="text-2xl font-bold text-green-400">🎉 Algorithm Finished!</h3>
@@ -363,7 +327,6 @@ function HeapSortVisualizer() {
                         <>
                             <div className="flex items-center gap-4 mb-2">
                                <span className="text-purple-400 font-bold uppercase tracking-widest text-sm">Question:</span>
-                               {/* Hiển thị câu hỏi tùy theo tình huống */}
                                {currentData.type === 'COMPARE' ? (
                                    <span className="text-white text-lg">
                                        Is Child (<span className="text-pink-500 font-bold">{currentData.variables.compareVal2}</span>) &gt; Parent (<span className="text-purple-500 font-bold">{currentData.variables.compareVal1}</span>)?
@@ -373,7 +336,6 @@ function HeapSortVisualizer() {
                                )}
                             </div>
                             
-                            {/* Buttons for Compare */}
                             {currentData.type === 'COMPARE' && (
                               <div className="flex gap-4">
                                 <button onClick={() => handlePracticeDecision('SWAP')} className="px-6 py-4 bg-orange-600 hover:bg-orange-500 hover:scale-105 transition-all rounded-xl font-bold shadow-lg flex items-center gap-2"><ArrowUp /> YES (Swap)</button>
@@ -381,21 +343,17 @@ function HeapSortVisualizer() {
                               </div>
                             )}
 
-                            {/* Buttons for Swap (Extract Phase or Heapify Swap) */}
                             {currentData.type === 'SWAP' && (
                               <div className="flex flex-col items-center gap-2">
-                                {/* Nếu đang swap 0 với end -> Là Extract */}
                                 {currentData.indices[0] === 0 && currentData.indices[1] === currentData.variables.heapSize ? (
                                     <button onClick={() => handlePracticeDecision('EXTRACT')} className="px-8 py-4 bg-red-600 hover:bg-red-500 hover:scale-105 transition-all rounded-xl font-bold text-xl shadow-lg flex items-center gap-2"><ArrowRightLeft /> EXTRACT MAX</button>
                                 ) : (
-                                    // Swap thường trong heapify
                                     <button onClick={() => handlePracticeDecision('SWAP')} className="px-8 py-4 bg-orange-600 hover:bg-orange-500 hover:scale-105 transition-all rounded-xl font-bold text-xl shadow-lg flex items-center gap-2"><ArrowRightLeft /> SWAP NOW</button>
                                 )}
                               </div>
                             )}
                         </>
                     )}
-
                     <div className="absolute top-4 right-6 flex items-center gap-2 bg-slate-950 px-4 py-2 rounded-full border border-purple-500/30">
                        <Trophy className="text-yellow-500" size={18} /><span className="font-bold text-white">Score: {practiceScore}</span>
                     </div>
@@ -432,23 +390,6 @@ function HeapSortVisualizer() {
                     </div>
                   </>
                 )}
-            </div>
-
-            {/* STATUS LOG */}
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row gap-6">
-                 <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2 text-cyan-400 text-sm font-bold uppercase tracking-wider"><Activity size={16} /> Status Log</div>
-                    <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 h-24 flex items-center"><p className="text-slate-300 text-sm font-mono leading-relaxed">{currentData.message}</p></div>
-                 </div>
-                 <div className="w-full md:w-64 space-y-2">
-                    <div className="flex items-center gap-2 text-purple-400 text-sm font-bold uppercase tracking-wider">Variables</div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Parent Idx</span><span className="text-purple-400 font-mono font-bold">{currentData.variables.parent ?? '-'}</span></div>
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Child Idx</span><span className="text-pink-400 font-mono font-bold">{currentData.variables.child ?? '-'}</span></div>
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Parent Val</span><span className="text-white font-mono font-bold">{currentData.variables.compareVal1 ?? '-'}</span></div>
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Child Val</span><span className="text-white font-mono font-bold">{currentData.variables.compareVal2 ?? '-'}</span></div>
-                    </div>
-                 </div>
             </div>
         </div>
 
