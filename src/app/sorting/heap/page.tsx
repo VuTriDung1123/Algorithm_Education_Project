@@ -16,7 +16,7 @@ import Link from "next/link";
 import { generateHeapSortTimeline } from "@/lib/algorithms/heapSort";
 import { AnimationStep } from "@/lib/algorithms/types";
 import { heapSortCode, Language } from "@/lib/algorithms/codeSnippets";
-import { playCompareSound, playSwapSound, playSuccessSound, playErrorSound, playNote } from "@/lib/sound";
+import { playCompareSound, playSwapSound, playSuccessSound, playErrorSound } from "@/lib/sound";
 // --- IMPORT COMPONENT CÂY MỚI ---
 import HeapTree from "@/components/Visualization/HeapTree";
 

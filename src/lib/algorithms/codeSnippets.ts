@@ -3,7 +3,7 @@ export type Language = 'Pseudo' | 'C++' | 'C#' | 'Java' | 'Python' | 'Go';
 interface CodeSnippet {
   code: string;
   highlight: {
-    COMPARE: number;
+    COMPARE?: number;
     SWAP?: number;   // Dấu ? nghĩa là có thể không có (Insertion Sort ít dùng Swap)
     SHIFT?: number;  // Dành cho Insertion Sort
     INSERT?: number; // Dành cho Insertion Sort
@@ -11,6 +11,9 @@ interface CodeSnippet {
     MERGE?: number;      // <--- MỚI: Cho Merge Sort
     OVERWRITE?: number;  // <--- MỚI: Cho Merge Sort
     PIVOT?: number;      // <--- MỚI: Cho Quick Sort
+    COUNT?: number;        // <--- MỚI: Cho Counting Sort
+    ACCUMULATE?: number;   // <--- MỚI: Cho Counting Sort
+    PLACE?: number;        // <--- MỚI: Cho Counting Sort
 
   };
 }
@@ -566,5 +569,119 @@ void HeapSort(int[] arr) { ... }`,
     }
 }`,
     highlight: { COMPARE: 5, SWAP: 8 }
+  }
+};
+
+
+// --- 7. COUNTING SORT ---
+export const countingSortCode: Record<Language, CodeSnippet> = {
+  'Pseudo': {
+    code: `procedure countingSort(arr):
+  max = findMax(arr)
+  count = array of size max+1 filled with 0
+  
+  // Phase 1: Count
+  for val in arr:
+    count[val]++
+    
+  // Phase 2: Accumulate
+  for i = 1 to max:
+    count[i] += count[i-1]
+    
+  // Phase 3: Place
+  output = array of size length(arr)
+  for i = length(arr)-1 down to 0:
+    val = arr[i]
+    pos = count[val] - 1
+    output[pos] = val
+    count[val]--`,
+    highlight: { COUNT: 7, ACCUMULATE: 11, PLACE: 17 } // Các dòng tương ứng
+  },
+  'C++': {
+    code: `void countingSort(vector<int>& arr) {
+    int max = *max_element(arr.begin(), arr.end());
+    vector<int> count(max + 1, 0);
+    vector<int> output(arr.size());
+
+    for (int x : arr) count[x]++;
+
+    for (int i = 1; i <= max; i++) 
+        count[i] += count[i - 1];
+
+    for (int i = arr.size() - 1; i >= 0; i--) {
+        output[count[arr[i]] - 1] = arr[i];
+        count[arr[i]]--;
+    }
+}`,
+    highlight: { COUNT: 5, ACCUMULATE: 8, PLACE: 11 }
+  },
+  'C#': {
+    code: `void CountingSort(int[] arr) {
+    int max = arr.Max();
+    int[] count = new int[max + 1];
+    int[] output = new int[arr.Length];
+
+    foreach (int x in arr) count[x]++;
+
+    for (int i = 1; i <= max; i++)
+        count[i] += count[i - 1];
+
+    for (int i = arr.Length - 1; i >= 0; i--) {
+        output[count[arr[i]] - 1] = arr[i];
+        count[arr[i]]--;
+    }
+}`,
+    highlight: { COUNT: 5, ACCUMULATE: 8, PLACE: 11 }
+  },
+  'Java': {
+    code: `void countingSort(int[] arr) {
+    int max = Arrays.stream(arr).max().getAsInt();
+    int[] count = new int[max + 1];
+    int[] output = new int[arr.length];
+
+    for (int x : arr) count[x]++;
+
+    for (int i = 1; i <= max; i++)
+        count[i] += count[i - 1];
+
+    for (int i = arr.length - 1; i >= 0; i--) {
+        output[count[arr[i]] - 1] = arr[i];
+        count[arr[i]]--;
+    }
+}`,
+    highlight: { COUNT: 5, ACCUMULATE: 8, PLACE: 11 }
+  },
+  'Python': {
+    code: `def counting_sort(arr):
+    max_val = max(arr)
+    count = [0] * (max_val + 1)
+    output = [0] * len(arr)
+
+    for x in arr: count[x] += 1
+
+    for i in range(1, len(count)):
+        count[i] += count[i-1]
+
+    for i in range(len(arr)-1, -1, -1):
+        output[count[arr[i]] - 1] = arr[i]
+        count[arr[i]] -= 1`,
+    highlight: { COUNT: 5, ACCUMULATE: 8, PLACE: 11 }
+  },
+  'Go': {
+    code: `func CountingSort(arr []int) {
+    // ... find max ...
+    count := make([]int, max+1)
+    output := make([]int, len(arr))
+
+    for _, x := range arr { count[x]++ }
+
+    for i := 1; i <= max; i++ { count[i] += count[i-1] }
+
+    for i := len(arr) - 1; i >= 0; i-- {
+        output[count[arr[i]]-1] = arr[i]
+        count[arr[i]]--
+    }
+}`,
+    highlight: { COUNT: 5, ACCUMULATE: 7, PLACE: 10 }
   }
 };

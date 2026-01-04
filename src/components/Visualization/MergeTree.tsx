@@ -22,7 +22,6 @@ interface TreeNode {
 export default function MergeTree({ data, array }: MergeTreeProps) {
   const width = 800;
   const height = 400;
-  const nodeRadius = 18;
   const levelHeight = 70;
 
   // Hàm đệ quy để tính toán vị trí các Node (Chỉ chạy 1 lần khi mảng đổi kích thước)
