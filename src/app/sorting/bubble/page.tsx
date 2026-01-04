@@ -24,7 +24,7 @@ const MAX_VALUE = 100;
 const ANIMATION_SPEED_MIN = 10;
 const ANIMATION_SPEED_MAX = 500;
 
-// Nội dung lý thuyết Bubble Sort (Detailed)
+// --- THEORY COMPONENT (DETAILED VERSION) ---
 const BubbleSortTheory = () => (
   <div className="space-y-6 text-slate-300 leading-relaxed">
     <div>
@@ -59,7 +59,7 @@ const BubbleSortTheory = () => (
              <li>Compare 5 &amp; 1 &rarr; Swap &rarr; [1, 5, 4, 2]</li>
              <li>Compare 5 &amp; 4 &rarr; Swap &rarr; [1, 4, 5, 2]</li>
              <li>Compare 5 &amp; 2 &rarr; Swap &rarr; [1, 4, 2, <span className="text-green-400 font-bold">5</span>]</li>
-             <li className="text-slate-500 italic text-xs">{'// 5 reached the end. It is sorted.'}</li>
+             <li className="text-slate-500 italic text-xs">{`// 5 reached the end. It is sorted.`}</li>
           </ul>
         </div>
         
@@ -68,7 +68,7 @@ const BubbleSortTheory = () => (
           <ul className="pl-4 border-l-2 border-slate-700 ml-2 mt-1 space-y-1">
              <li>Compare 1 &amp; 4 &rarr; OK (1 &lt; 4) &rarr; [1, 4, 2, 5]</li>
              <li>Compare 4 &amp; 2 &rarr; Swap &rarr; [1, 2, <span className="text-green-400 font-bold">4, 5</span>]</li>
-             <li className="text-slate-500 italic text-xs">{'// 4 is sorted.'}</li>
+             <li className="text-slate-500 italic text-xs">{`// 4 is sorted.`}</li>
           </ul>
         </div>
       </div>
@@ -111,10 +111,7 @@ export default function BubbleSortPage() {
 function BubbleSortVisualizer() {
   const searchParams = useSearchParams();
 
-  // --- 2. STATE (SỬA LỖI HYDRATION TẠI ĐÂY) ---
-  
-  // KHỞI TẠO MẢNG RỖNG [] thay vì Random ngay lập tức
-  // Để Server và Client đều thấy mảng rỗng ban đầu -> Không bị lệch
+  // --- 2. STATE ---
   const [initialArray, setInitialArray] = useState<number[]>([]);
   const [timeline, setTimeline] = useState<AnimationStep[]>([]);
   const [userInput, setUserInput] = useState("");
@@ -135,20 +132,12 @@ function BubbleSortVisualizer() {
 
   // --- 3. INIT LOGIC ---
   useEffect(() => {
-    // Logic này chỉ chạy ở Client, an toàn để Random
     const urlArr = searchParams.get('arr');
     let startArr: number[] = [];
-
     if (urlArr) {
-      try {
-        const parsed = urlArr.split(',').map(n => parseInt(n)).filter(n => !isNaN(n));
-        if (parsed.length > 0) startArr = parsed.slice(0, 20);
-      } catch (e) { console.error("Invalid URL params", e); }
+      try { const parsed = urlArr.split(',').map(n => parseInt(n)).filter(n => !isNaN(n)); if (parsed.length > 0) startArr = parsed.slice(0, 20); } catch (e) { console.error(e); }
     }
-
-    // Nếu không có URL, lúc này mới tạo Random
     if (startArr.length === 0) startArr = generateRandomArray();
-
     loadNewArray(startArr);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
@@ -163,17 +152,15 @@ function BubbleSortVisualizer() {
     setUserInput(newArr.join(", "));
     setPracticeScore(0);
     setPracticeFeedback(null);
-    
     const newUrl = `${window.location.pathname}?arr=${newArr.join(',')}`;
     window.history.replaceState({ path: newUrl }, '', newUrl);
   };
 
-  // --- 4. SOUND ENGINE EFFECT ---
+  // --- 4. EFFECTS ---
   useEffect(() => {
     if (isMuted || currentStep === 0) return;
     const stepData = timeline[currentStep];
     if (!stepData) return;
-
     if (stepData.type === 'COMPARE') {
       const val = Math.max(stepData.variables.compareVal1 || 0, stepData.variables.compareVal2 || 0);
       playCompareSound(val);
@@ -184,7 +171,6 @@ function BubbleSortVisualizer() {
     }
   }, [currentStep, isMuted, timeline]);
 
-  // --- 5. LOOP EFFECT ---
   useEffect(() => {
     let animationFrameId: number;
     if (isPlaying && !isPracticeMode) {
@@ -194,7 +180,6 @@ function BubbleSortVisualizer() {
           else { setIsPlaying(false); return prev; }
         });
       }, speed);
-
       if (!startTimeRef.current) startTimeRef.current = Date.now() - elapsedTime * 1000;
       const updateTimer = () => {
         if (startTimeRef.current) {
@@ -203,13 +188,8 @@ function BubbleSortVisualizer() {
         }
       };
       animationFrameId = requestAnimationFrame(updateTimer);
-    } else {
-      startTimeRef.current = null;
-    }
-    return () => { 
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    };
+    } else { startTimeRef.current = null; }
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); if (animationFrameId) cancelAnimationFrame(animationFrameId); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, speed, timeline.length, currentStep, isPracticeMode]);
 
@@ -218,34 +198,28 @@ function BubbleSortVisualizer() {
   const handleSorted = () => loadNewArray(generateSortedArray());
   const handleReverse = () => loadNewArray(generateReverseSortedArray());
   const handleNearlySorted = () => loadNewArray(generateNearlySortedArray());
-  const handleUserSubmit = () => {
-    const arr = userInput.split(",").map(num => parseInt(num.trim())).filter(num => !isNaN(num));
-    if (arr.length > 0) loadNewArray(arr.slice(0, 20));
-    else alert("Invalid input!");
-  };
-
+  const handleUserSubmit = () => { const arr = userInput.split(",").map(num => parseInt(num.trim())).filter(num => !isNaN(num)); if (arr.length > 0) loadNewArray(arr.slice(0, 20)); else alert("Invalid input!"); };
   const handleStepForward = () => { setIsPlaying(false); if (currentStep < timeline.length - 1) setCurrentStep(c => c + 1); };
   const handleStepBackward = () => { setIsPlaying(false); if (currentStep > 0) setCurrentStep(c => c - 1); };
   const handleSkipStart = () => { setIsPlaying(false); setCurrentStep(0); setElapsedTime(0); };
   const handleSkipEnd = () => { setIsPlaying(false); setCurrentStep(timeline.length - 1); };
   const handleScrub = (e: React.ChangeEvent<HTMLInputElement>) => { setIsPlaying(false); setCurrentStep(Number(e.target.value)); };
+  const handleShare = () => { navigator.clipboard.writeText(window.location.href); alert("Copied URL to clipboard!"); };
+  const handlePracticeModeToggle = () => { setIsPracticeMode(!isPracticeMode); setIsPlaying(false); setPracticeFeedback(null); };
 
-  const handleShare = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
-    alert("Copied URL to clipboard! Send it to your students/friends.");
-  };
-
-  const handlePracticeModeToggle = () => {
-    setIsPracticeMode(!isPracticeMode);
-    setIsPlaying(false);
-    setPracticeFeedback(null);
-  };
-
+  // --- LOGIC PRACTICE MODE (ĐÃ CẬP NHẬT) ---
   const handlePracticeDecision = (decision: 'SWAP' | 'NO_SWAP') => {
+    // SỬA: Chặn nếu đã xong
+    if (currentStep >= timeline.length - 1) {
+        setPracticeFeedback({ type: 'success', msg: 'Algorithm Finished! Good job.' });
+        return;
+    }
+
     const currentData = timeline[currentStep];
     const val1 = currentData.variables.compareVal1 || 0;
     const val2 = currentData.variables.compareVal2 || 0;
+    
+    // Bubble sort: Nếu đứng trước > đứng sau thì SWAP, ngược lại NO SWAP
     const shouldSwap = val1 > val2;
     const isCorrect = (decision === 'SWAP' && shouldSwap) || (decision === 'NO_SWAP' && !shouldSwap);
 
@@ -253,6 +227,8 @@ function BubbleSortVisualizer() {
       setPracticeScore(s => s + 10);
       setPracticeFeedback({ type: 'success', msg: 'Correct! +10 pts' });
       playSuccessSound();
+      
+      // Auto move logic
       if (shouldSwap) {
          if (currentStep < timeline.length - 2) setCurrentStep(c => c + 2);
          else handleStepForward();
@@ -267,11 +243,9 @@ function BubbleSortVisualizer() {
     setTimeout(() => setPracticeFeedback(null), 1000);
   };
 
-  // --- 7. RENDER PREPARATION ---
-  const currentData = timeline[currentStep] || { 
-    arrayState: initialArray, indices: [], sortedIndices: [], type: null,
-    message: "Ready...", variables: { i: 0, j: 0 }, counts: { comparisons: 0, swaps: 0 }
-  };
+  // --- 7. RENDER ---
+  const currentData = timeline[currentStep] || { arrayState: initialArray, indices: [], sortedIndices: [], type: null, message: "Ready...", variables: { i: 0, j: 0 }, counts: { comparisons: 0, swaps: 0 } };
+  const isFinished = currentStep >= timeline.length - 1; // Check đã xong chưa
 
   const getBarColor = (index: number) => {
     if (!timeline.length) return "bg-cyan-500";
@@ -293,11 +267,8 @@ function BubbleSortVisualizer() {
     return -1;
   };
 
-  // Prevent hydration mismatch by waiting for client load
-  // (Mặc dù đã fix state, nhưng thêm check này cho chắc chắn 100%)
   const [isClient, setIsClient] = useState(false);
   useEffect(() => { setIsClient(true) }, []);
-
   if (!isClient) return <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">Loading Visualizer...</div>;
 
   return (
@@ -306,84 +277,45 @@ function BubbleSortVisualizer() {
       {/* THEORY MODAL */}
       <AnimatePresence>
         {isTheoryOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-            onClick={() => setIsTheoryOpen(false)} 
-          >
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-slate-900 border border-slate-700 w-full max-w-2xl max-h-[80vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
-              onClick={(e) => e.stopPropagation()} 
-            >
-              <div className="flex justify-between items-center p-6 border-b border-slate-800 bg-slate-950">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-2"><BookOpen className="text-purple-400" /> Theory: Bubble Sort</h2>
-                <button onClick={() => setIsTheoryOpen(false)} className="text-slate-400 hover:text-white transition-colors"><X size={24} /></button>
-              </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setIsTheoryOpen(false)}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-slate-900 border border-slate-700 w-full max-w-2xl max-h-[80vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-between items-center p-6 border-b border-slate-800 bg-slate-950"><h2 className="text-2xl font-bold text-white flex items-center gap-2"><BookOpen className="text-purple-400" /> Theory: Bubble Sort</h2><button onClick={() => setIsTheoryOpen(false)}><X size={24} /></button></div>
               <div className="p-6 overflow-y-auto custom-scrollbar"><BubbleSortTheory /></div>
-              <div className="p-4 border-t border-slate-800 bg-slate-950 flex justify-end">
-                <button onClick={() => setIsTheoryOpen(false)} className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition-colors">Got it!</button>
-              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* TOP BAR */}
+      {/* TOP NAV */}
       <div className="w-full max-w-7xl mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <Link href="/" className="flex items-center text-slate-400 hover:text-white transition-colors gap-2 w-fit self-start">
-            <ArrowLeft size={20} /> Dashboard
-        </Link>
+        <Link href="/" className="flex items-center text-slate-400 hover:text-white gap-2"><ArrowLeft size={20} /> Dashboard</Link>
         <div className="flex items-center gap-3">
-             <button onClick={() => setIsMuted(!isMuted)} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors text-slate-300" title={isMuted ? "Unmute" : "Mute"}>
-                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-             </button>
-             <button onClick={handleShare} className="p-2 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors text-slate-300" title="Share URL">
-                <Share2 size={20} />
-             </button>
-             <button 
-                onClick={handlePracticeModeToggle} 
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-all ${isPracticeMode ? "bg-purple-600 text-white shadow-[0_0_15px_rgba(147,51,234,0.5)]" : "bg-slate-800 text-slate-300 hover:bg-slate-700"}`}
-             >
-                <Gamepad2 size={20} /> {isPracticeMode ? "Practice Mode ON" : "Practice Mode"}
-             </button>
+             <button onClick={() => setIsMuted(!isMuted)} className="p-2 bg-slate-800 rounded-full">{isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}</button>
+             <button onClick={handleShare} className="p-2 bg-slate-800 rounded-full"><Share2 size={20} /></button>
+             <button onClick={handlePracticeModeToggle} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold transition-all ${isPracticeMode ? "bg-purple-600 text-white" : "bg-slate-800 text-slate-300"}`}><Gamepad2 size={20} /> {isPracticeMode ? "Practice ON" : "Practice"}</button>
         </div>
       </div>
 
       <div className="flex justify-between items-center w-full max-w-7xl mb-6">
-        <button onClick={() => setIsTheoryOpen(true)} className="group flex items-center gap-3 text-3xl font-bold bg-linear-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
-          Bubble Sort Visualization <BookOpen className="text-slate-500 group-hover:text-purple-400 transition-colors" size={24} />
-        </button>
+        <button onClick={() => setIsTheoryOpen(true)} className="group flex items-center gap-3 text-3xl font-bold bg-linear-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Bubble Sort Visualization <BookOpen className="text-slate-500 group-hover:text-purple-400" size={24} /></button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full max-w-7xl">
         <div className="xl:col-span-2 space-y-6">
             
             {/* VISUALIZER */}
-            <div className="flex items-end justify-center gap-2 h-96 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 backdrop-blur-sm shadow-2xl overflow-hidden relative">
-                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(#334155 1px, transparent 1px)', backgroundSize: '100% 40px' }}></div>
-                
+            <div className="flex items-end justify-center gap-2 h-96 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
                 <AnimatePresence>
                   {practiceFeedback && (
-                     <motion.div 
-                       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                       className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
-                     >
-                       {practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}
-                       {practiceFeedback.msg}
+                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+                       {practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}
                      </motion.div>
                   )}
                 </AnimatePresence>
-
                 {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
                   <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
-                      <motion.div
-                          layout 
-                          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                          style={{ height: `${value * 3}px` }} 
-                          className={`w-full rounded-t-md relative group cursor-pointer transition-colors duration-100 ${getBarColor(index)}`}
-                      >
-                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] md:text-xs font-bold text-cyan-200">{value}</span>
+                      <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 3}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
+                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-cyan-200">{value}</span>
                       </motion.div>
                       <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
                   </div>
@@ -402,19 +334,32 @@ function BubbleSortVisualizer() {
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-6 relative overflow-hidden">
                 {isPracticeMode ? (
                   <div className="flex flex-col items-center justify-center space-y-4 py-2 animate-in fade-in duration-300">
-                    <div className="flex items-center gap-4 mb-2">
-                       <span className="text-purple-400 font-bold uppercase tracking-widest text-sm">Target:</span>
-                       <span className="text-white text-lg">Compare <span className="text-yellow-400 font-bold">{currentData.variables.compareVal1}</span> & <span className="text-yellow-400 font-bold">{currentData.variables.compareVal2}</span></span>
-                    </div>
                     
-                    {currentData.type === 'COMPARE' ? (
-                      <div className="flex gap-4">
-                        <button onClick={() => handlePracticeDecision('SWAP')} className="px-8 py-4 bg-red-600 hover:bg-red-500 hover:scale-105 active:scale-95 transition-all rounded-xl font-bold text-xl shadow-lg shadow-red-900/50 flex items-center gap-2"><ArrowRightLeft /> SWAP</button>
-                        <button onClick={() => handlePracticeDecision('NO_SWAP')} className="px-8 py-4 bg-green-600 hover:bg-green-500 hover:scale-105 active:scale-95 transition-all rounded-xl font-bold text-xl shadow-lg shadow-green-900/50 flex items-center gap-2"><CheckCircle2 /> NO SWAP</button>
-                      </div>
+                    {/* SỬA: Hiển thị bảng tổng kết nếu Finished */}
+                    {isFinished ? (
+                        <div className="text-center space-y-2">
+                            <h3 className="text-2xl font-bold text-green-400">🎉 Algorithm Finished!</h3>
+                            <p className="text-slate-400">Final Score: <span className="text-yellow-400 font-bold text-xl">{practiceScore}</span></p>
+                            <button onClick={handleRandomize} className="px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white mt-2">Try Again</button>
+                        </div>
                     ) : (
-                      <div className="text-slate-400 italic">Wait for next comparison... or <button onClick={handleStepForward} className="text-cyan-400 underline">Skip</button></div>
+                        <>
+                            <div className="flex items-center gap-4 mb-2">
+                               <span className="text-purple-400 font-bold uppercase tracking-widest text-sm">Target:</span>
+                               <span className="text-white text-lg">Compare <span className="text-yellow-400 font-bold">{currentData.variables.compareVal1}</span> & <span className="text-yellow-400 font-bold">{currentData.variables.compareVal2}</span></span>
+                            </div>
+                            
+                            {currentData.type === 'COMPARE' ? (
+                              <div className="flex gap-4">
+                                <button onClick={() => handlePracticeDecision('SWAP')} className="px-8 py-4 bg-red-600 hover:bg-red-500 hover:scale-105 active:scale-95 transition-all rounded-xl font-bold text-xl shadow-lg shadow-red-900/50 flex items-center gap-2"><ArrowRightLeft /> SWAP</button>
+                                <button onClick={() => handlePracticeDecision('NO_SWAP')} className="px-8 py-4 bg-green-600 hover:bg-green-500 hover:scale-105 active:scale-95 transition-all rounded-xl font-bold text-xl shadow-lg shadow-green-900/50 flex items-center gap-2"><CheckCircle2 /> NO SWAP</button>
+                              </div>
+                            ) : (
+                              <div className="text-slate-400 italic">Wait for next comparison... or <button onClick={handleStepForward} className="text-cyan-400 underline">Skip</button></div>
+                            )}
+                        </>
                     )}
+
                     <div className="absolute top-4 right-6 flex items-center gap-2 bg-slate-950 px-4 py-2 rounded-full border border-purple-500/30">
                        <Trophy className="text-yellow-500" size={18} /><span className="font-bold text-white">Score: {practiceScore}</span>
                     </div>
@@ -437,7 +382,6 @@ function BubbleSortVisualizer() {
                     <div className="space-y-4">
                         <div className="flex justify-between text-[10px] text-slate-500 font-mono uppercase"><span>Step {currentStep}</span><span>Total {timeline.length - 1}</span></div>
                         <input type="range" min="0" max={Math.max(0, timeline.length - 1)} value={currentStep} onChange={handleScrub} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 hover:accent-cyan-400" />
-                        
                         <div className="flex flex-wrap items-center justify-between gap-4">
                             <div className="flex items-center gap-1">
                                 <button onClick={handleSkipStart} disabled={currentStep === 0} className="p-2 text-slate-400 hover:text-white disabled:opacity-30"><SkipBack size={20} /></button>
@@ -448,10 +392,7 @@ function BubbleSortVisualizer() {
                                 <button onClick={handleStepForward} disabled={currentStep === timeline.length - 1} className="p-2 text-slate-400 hover:text-white disabled:opacity-30"><StepForward size={20} /></button>
                                 <button onClick={handleSkipEnd} disabled={currentStep === timeline.length - 1} className="p-2 text-slate-400 hover:text-white disabled:opacity-30"><SkipForward size={20} /></button>
                             </div>
-                            <div className="flex items-center gap-3 bg-slate-950 px-3 py-2 rounded-lg border border-slate-800">
-                              <span className="text-[10px] font-bold text-slate-500 uppercase">Speed</span>
-                              <input type="range" min={ANIMATION_SPEED_MIN} max={ANIMATION_SPEED_MAX} value={ANIMATION_SPEED_MAX - speed + ANIMATION_SPEED_MIN} onChange={(e) => setSpeed(ANIMATION_SPEED_MAX - Number(e.target.value) + ANIMATION_SPEED_MIN)} className="w-20 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" />
-                            </div>
+                            <div className="flex items-center gap-3 bg-slate-950 px-3 py-2 rounded-lg border border-slate-800"><span className="text-[10px] font-bold text-slate-500 uppercase">Speed</span><input type="range" min={ANIMATION_SPEED_MIN} max={ANIMATION_SPEED_MAX} value={ANIMATION_SPEED_MAX - speed + ANIMATION_SPEED_MIN} onChange={(e) => setSpeed(ANIMATION_SPEED_MAX - Number(e.target.value) + ANIMATION_SPEED_MIN)} className="w-20 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" /></div>
                         </div>
                     </div>
                   </>
