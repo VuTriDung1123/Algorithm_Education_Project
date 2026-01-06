@@ -17,11 +17,12 @@ import { generateTimSortTimeline } from "@/lib/algorithms/timSort";
 import { AnimationStep } from "@/lib/algorithms/types";
 import { timSortCode, Language } from "@/lib/algorithms/codeSnippets";
 import { playCompareSound, playSwapSound, playSuccessSound, playErrorSound, playNote } from "@/lib/sound";
+import TimSortTiles from "@/components/Visualization/TimSortTiles";
 
 // --- 1. CONFIG ---
-const ARRAY_SIZE = 16; // 16 để chia hết cho 4 (Min Run) đẹp
+const ARRAY_SIZE = 12; 
 const MIN_VALUE = 10;
-const MAX_VALUE = 100;
+const MAX_VALUE = 99;
 const ANIMATION_SPEED_MIN = 10;
 const ANIMATION_SPEED_MAX = 500;
 
@@ -35,10 +36,10 @@ const TimSortTheory = () => (
 );
 
 // --- HELPER FUNCTIONS ---
-const generateRandomArray = () => Array.from({ length: ARRAY_SIZE }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
-const generateSortedArray = () => { const arr = generateRandomArray(); return arr.sort((a,b) => a-b); };
-const generateReverseSortedArray = () => generateSortedArray().reverse();
-const generateNearlySortedArray = () => { const arr = generateSortedArray(); for(let i=0; i<3; i++) { const i1=Math.floor(Math.random()*ARRAY_SIZE); const i2=Math.floor(Math.random()*ARRAY_SIZE); [arr[i1], arr[i2]] = [arr[i2], arr[i1]]; } return arr; };
+const generateRandomArray = (len = ARRAY_SIZE) => Array.from({ length: len }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
+const generateSortedArray = (len = ARRAY_SIZE) => { const step = Math.floor((MAX_VALUE - MIN_VALUE) / len); return Array.from({ length: len }, (_, i) => MIN_VALUE + i * step); };
+const generateReverseSortedArray = (len = ARRAY_SIZE) => generateSortedArray(len).reverse();
+const generateNearlySortedArray = (len = ARRAY_SIZE) => { const arr = generateSortedArray(len); for(let i=0; i<3; i++) { const i1=Math.floor(Math.random()*len); const i2=Math.floor(Math.random()*len); [arr[i1], arr[i2]] = [arr[i2], arr[i1]]; } return arr; };
 
 export default function TimSortPage() {
   return (
@@ -96,7 +97,7 @@ function TimSortVisualizer() {
     if (stepData.type === 'COMPARE') playCompareSound(0);
     else if (stepData.type === 'SWAP' || stepData.type === 'SHIFT') playSwapSound();
     else if (stepData.type === 'OVERWRITE' || stepData.type === 'INSERT') playNote(600, 'square', 0.05);
-    else if (stepData.type === 'TIM_RUN_START') playNote(300, 'triangle', 0.1);
+    else if (stepData.type === 'TIM_RUN_START' || stepData.type === 'TIM_MERGE_START') playNote(300, 'triangle', 0.1);
     else if (stepData.type === 'SORTED') playSuccessSound();
   }, [currentStep, isMuted, timeline]);
 
@@ -117,7 +118,6 @@ function TimSortVisualizer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, speed, timeline.length, currentStep, isPracticeMode]);
 
-  // --- HANDLERS ---
   const handleRandomize = () => loadNewArray(generateRandomArray());
   const handleSorted = () => loadNewArray(generateSortedArray());
   const handleReverse = () => loadNewArray(generateReverseSortedArray());
@@ -131,26 +131,22 @@ function TimSortVisualizer() {
   const handleShare = () => { navigator.clipboard.writeText(window.location.href); alert("Copied URL to clipboard!"); };
   const handlePracticeModeToggle = () => { setIsPracticeMode(!isPracticeMode); setIsPlaying(false); setPracticeFeedback(null); };
 
-  // --- PRACTICE LOGIC (TIM SORT) ---
+  // --- PRACTICE LOGIC ---
   const handlePracticeDecision = (decision: 'SHIFT' | 'INSERT' | 'LEFT' | 'RIGHT') => {
     if (currentStep >= timeline.length - 1) { setPracticeFeedback({ type: 'success', msg: 'Finished!' }); return; }
     
     const currentData = timeline[currentStep];
-    
-    // Check Phase
     const isInsertionPhase = currentData.variables.keyVal !== undefined;
     let isCorrect = false;
 
     if (currentData.type === 'COMPARE') {
         if (isInsertionPhase) {
-            // Insertion Logic: Compare Arr[j] vs Key
             const valJ = currentData.variables.compareVal1 || 0;
             const key = currentData.variables.keyVal || 0;
             const shouldShift = valJ > key;
             if (decision === 'SHIFT' && shouldShift) isCorrect = true;
             else if (decision === 'INSERT' && !shouldShift) isCorrect = true;
         } else {
-            // Merge Logic: Compare Left vs Right
             const leftVal = currentData.variables.compareVal1 || 0;
             const rightVal = currentData.variables.compareVal2 || 0;
             if (decision === 'LEFT' && leftVal <= rightVal) isCorrect = true;
@@ -166,21 +162,18 @@ function TimSortVisualizer() {
       setPracticeFeedback({ type: 'success', msg: 'Correct!' });
       playSuccessSound();
       
-      // Auto move
       if (isInsertionPhase) {
-          // Logic shift thường nhảy 2 bước (Compare -> Shift)
           const valJ = currentData.variables.compareVal1 || 0;
           const key = currentData.variables.keyVal || 0;
           if (valJ > key && currentStep < timeline.length - 2) setCurrentStep(c => c + 2);
           else handleStepForward();
       } else {
-          // Logic merge nhảy 2 bước (Compare -> Overwrite)
           if (currentStep < timeline.length - 2) setCurrentStep(c => c + 2);
           else handleStepForward();
       }
     } else {
       setPracticeScore(s => Math.max(0, s - 5));
-      setPracticeFeedback({ type: 'error', msg: 'Wrong decision.' });
+      setPracticeFeedback({ type: 'error', msg: 'Wrong logic.' });
       playErrorSound();
     }
     setTimeout(() => setPracticeFeedback(null), 800);
@@ -188,19 +181,18 @@ function TimSortVisualizer() {
 
   const currentData = timeline[currentStep] || { arrayState: initialArray, indices: [], sortedIndices: [], type: null, message: "Ready...", variables: {}, counts: { comparisons: 0, swaps: 0 } };
   const isFinished = currentStep >= timeline.length - 1;
+  const isInsertionPhase = currentData.variables.keyVal !== undefined;
 
   // --- RENDER ---
   const getBarColor = (index: number) => {
     if (!timeline.length) return "bg-cyan-500";
     const { type, indices, variables, sortedIndices } = currentData;
     
-    // Highlight Range của Run hoặc Merge hiện tại
     if (variables.runStart !== undefined && variables.runEnd !== undefined) {
         if (index >= variables.runStart && index <= variables.runEnd) {
-            // Đang trong Insertion Run
-            if (index === variables.i) return "bg-purple-500"; // Key position gốc
+            // In run
         } else if (!sortedIndices.includes(index)) {
-            return "bg-slate-800 opacity-30"; // Dim các phần khác
+            return "bg-slate-800 opacity-30"; 
         }
     }
     if (variables.left !== undefined && variables.right !== undefined) {
@@ -212,22 +204,23 @@ function TimSortVisualizer() {
     if (indices.includes(index)) {
         if (type === 'COMPARE') return "bg-yellow-400";
         if (type === 'SHIFT' || type === 'SWAP') return "bg-orange-500";
-        if (type === 'OVERWRITE' || type === 'INSERT') return "bg-pink-500";
+        if (type === 'OVERWRITE' || type === 'INSERT') return "bg-green-500";
     }
     return "bg-cyan-600";
   };
 
   const getActiveLine = () => {
-    // Mapping đơn giản vì code trace Tim Sort dài
-    if (currentData.type === 'COMPARE') return 3; 
+    const snippet = timSortCode[selectedLanguage];
+    if (!currentData.type) return -1;
+    if (currentData.type === 'COMPARE') return snippet.highlight.COMPARE;
+    if (currentData.type === 'SHIFT') return snippet.highlight.SHIFT;
+    if (currentData.type === 'MERGE') return snippet.highlight.MERGE;
     return -1;
   };
 
   const [isClient, setIsClient] = useState(false);
   useEffect(() => { setIsClient(true) }, []);
   if (!isClient) return <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">Loading...</div>;
-
-  const isInsertionPhase = currentData.variables.keyVal !== undefined;
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-slate-950 text-white p-4 md:p-8 relative">
@@ -238,17 +231,26 @@ function TimSortVisualizer() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full max-w-7xl">
         <div className="xl:col-span-2 space-y-6">
-            {/* VISUALIZER */}
-            <div className="flex items-end justify-center gap-2 h-96 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
-                <AnimatePresence>{practiceFeedback && (<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>{practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}</motion.div>)}</AnimatePresence>
-                {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
-                <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
-                    <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 3}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
-                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white shadow-sm">{value}</span>
-                    </motion.div>
-                    <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
+            <div className="flex flex-col gap-4">
+                
+                {/* 1. BAR CHART: TĂNG CHIỀU CAO + TĂNG HỆ SỐ NHÂN */}
+                <div className="flex items-end justify-center gap-2 h-64 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
+                    <AnimatePresence>{practiceFeedback && (<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>{practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}</motion.div>)}</AnimatePresence>
+                    {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
+                    <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
+                        {/* UPDATE: h-64 nên nhân 2 là đẹp */}
+                        <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 2}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white shadow-sm">{value}</span>
+                        </motion.div>
+                        <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
+                    </div>
+                    )) : <div className="text-slate-500">Initializing...</div>}
                 </div>
-                )) : <div className="text-slate-500">Initializing...</div>}
+
+                {/* 2. TIM SORT TILES: GIẢM CHIỀU CAO */}
+                <div className="h-40 w-full"> 
+                    <TimSortTiles data={currentData} array={currentData.arrayState} />
+                </div>
             </div>
 
             {/* CONTROL PANEL */}
@@ -256,23 +258,21 @@ function TimSortVisualizer() {
                 {isPracticeMode ? (
                   <div className="flex flex-col items-center justify-center space-y-4 py-2">
                     {isFinished ? (
-                        <div className="text-center"><h3 className="text-2xl font-bold text-green-400">🎉 Algorithm Finished!</h3><button onClick={handleRandomize} className="px-6 py-2 bg-slate-700 mt-2 rounded">Retry</button></div>
+                        <div className="text-center"><h3 className="text-2xl font-bold text-green-400">🎉 Finished!</h3><button onClick={handleRandomize} className="px-6 py-2 bg-slate-700 mt-2 rounded">Retry</button></div>
                     ) : (
                         <>
                             {currentData.type === 'COMPARE' ? (
                                 isInsertionPhase ? (
-                                    // Insertion Controls
                                     <>
                                         <div className="flex items-center gap-4 mb-2"><span className="text-purple-400 font-bold uppercase text-sm">Phase: Insertion</span><span className="text-white">Is <span className="text-yellow-400 font-bold">{currentData.variables.compareVal1}</span> &gt; Key (<span className="text-purple-400 font-bold">{currentData.variables.keyVal}</span>)?</span></div>
                                         <div className="flex gap-4">
                                             <button onClick={() => handlePracticeDecision('SHIFT')} className="px-6 py-4 bg-orange-600 hover:bg-orange-500 rounded-xl font-bold flex gap-2"><ArrowRight /> YES (Shift)</button>
-                                            <button onClick={() => handlePracticeDecision('INSERT')} className="px-6 py-4 bg-pink-600 hover:bg-pink-500 rounded-xl font-bold flex gap-2"><ArrowDown /> NO (Insert)</button>
+                                            <button onClick={() => handlePracticeDecision('INSERT')} className="px-6 py-4 bg-green-600 hover:bg-green-500 rounded-xl font-bold flex gap-2"><ArrowDown /> NO (Insert)</button>
                                         </div>
                                     </>
                                 ) : (
-                                    // Merge Controls
                                     <>
-                                        <div className="flex items-center gap-4 mb-2"><span className="text-blue-400 font-bold uppercase text-sm">Phase: Merge</span><span className="text-white">Which is smaller?</span></div>
+                                        <div className="flex items-center gap-4 mb-2"><span className="text-blue-400 font-bold uppercase text-sm">Phase: Merge</span><span className="text-white">Compare Left vs Right. Smaller?</span></div>
                                         <div className="flex gap-4">
                                             <button onClick={() => handlePracticeDecision('LEFT')} className="px-6 py-4 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold flex gap-2"><ArrowLeft /> Left: {currentData.variables.compareVal1}</button>
                                             <button onClick={() => handlePracticeDecision('RIGHT')} className="px-6 py-4 bg-orange-600 hover:bg-orange-500 rounded-xl font-bold flex gap-2">Right: {currentData.variables.compareVal2} <ArrowRight /></button>
@@ -293,7 +293,6 @@ function TimSortVisualizer() {
                             <button onClick={handleRandomize} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-xs text-slate-300">Random</button>
                             <button onClick={handleSorted} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-xs text-slate-300">Sorted</button>
                             <button onClick={handleReverse} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-xs text-slate-300">Reverse</button>
-                            <button onClick={handleNearlySorted} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-xs text-slate-300">Nearly</button>
                         </div>
                         <div className="flex gap-2 w-full md:w-auto"><input type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)} className="flex-1 bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-xs" /><button onClick={handleUserSubmit} className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold">Load</button></div>
                     </div>
@@ -302,11 +301,9 @@ function TimSortVisualizer() {
                         <input type="range" min="0" max={Math.max(0, timeline.length - 1)} value={currentStep} onChange={handleScrub} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500" />
                         <div className="flex flex-wrap items-center justify-between gap-4">
                             <div className="flex items-center gap-1">
-                                <button onClick={handleSkipStart} disabled={currentStep === 0} className="p-2 text-slate-400"><SkipBack size={20} /></button>
-                                <button onClick={handleStepBackward} disabled={currentStep === 0} className="p-2 text-slate-400"><StepBack size={20} /></button>
+                                <button onClick={handleSkipStart} disabled={currentStep === 0} className="p-2 text-slate-400"><ListRestart size={20} /></button>
                                 <button onClick={() => setIsPlaying(!isPlaying)} className={`w-10 h-10 flex items-center justify-center rounded-full shadow-lg ${isPlaying ? 'bg-yellow-500 text-black' : 'bg-cyan-500 text-black'}`}>{isPlaying ? <Pause size={18} /> : <Play size={18} />}</button>
                                 <button onClick={handleStepForward} disabled={currentStep === timeline.length - 1} className="p-2 text-slate-400"><StepForward size={20} /></button>
-                                <button onClick={handleSkipEnd} disabled={currentStep === timeline.length - 1} className="p-2 text-slate-400"><SkipForward size={20} /></button>
                             </div>
                             <div className="flex items-center gap-3 bg-slate-950 px-3 py-2 rounded-lg border border-slate-800"><span className="text-[10px] font-bold text-slate-500 uppercase">Speed</span><input type="range" min={ANIMATION_SPEED_MIN} max={ANIMATION_SPEED_MAX} value={ANIMATION_SPEED_MAX - speed + ANIMATION_SPEED_MIN} onChange={(e) => setSpeed(ANIMATION_SPEED_MAX - Number(e.target.value) + ANIMATION_SPEED_MIN)} className="w-20 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" /></div>
                         </div>
@@ -324,10 +321,10 @@ function TimSortVisualizer() {
                  <div className="w-full md:w-64 space-y-2">
                     <div className="flex items-center gap-2 text-purple-400 text-sm font-bold uppercase tracking-wider">Variables</div>
                     <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Run Range</span><span className="text-white font-mono font-bold">[{currentData.variables.runStart ?? '-'}, {currentData.variables.runEnd ?? '-'}]</span></div>
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Merge Left</span><span className="text-blue-400 font-mono font-bold">{currentData.variables.compareVal1 ?? '-'}</span></div>
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Merge Right</span><span className="text-orange-400 font-mono font-bold">{currentData.variables.compareVal2 ?? '-'}</span></div>
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Insert Key</span><span className="text-pink-400 font-mono font-bold">{currentData.variables.keyVal ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Phase</span><span className="text-white font-mono font-bold text-[10px]">{isInsertionPhase ? "INSERT" : "MERGE"}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Run/Range</span><span className="text-white font-mono font-bold text-[10px]">[{isInsertionPhase ? currentData.variables.runStart : currentData.variables.left} - {isInsertionPhase ? currentData.variables.runEnd : currentData.variables.right}]</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Val 1</span><span className="text-blue-400 font-mono font-bold">{currentData.variables.compareVal1 ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Val 2</span><span className="text-orange-400 font-mono font-bold">{currentData.variables.compareVal2 ?? '-'}</span></div>
                     </div>
                  </div>
             </div>
