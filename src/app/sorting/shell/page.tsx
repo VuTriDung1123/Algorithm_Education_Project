@@ -17,11 +17,12 @@ import { generateShellSortTimeline } from "@/lib/algorithms/shellSort";
 import { AnimationStep } from "@/lib/algorithms/types";
 import { shellSortCode, Language } from "@/lib/algorithms/codeSnippets";
 import { playCompareSound, playSwapSound, playSuccessSound, playErrorSound, playNote } from "@/lib/sound";
+import ShellSortGapView from "@/components/Visualization/ShellSortGapView";
 
 // --- 1. CONFIG ---
-const ARRAY_SIZE = 15;
+const ARRAY_SIZE = 12; 
 const MIN_VALUE = 10;
-const MAX_VALUE = 100;
+const MAX_VALUE = 99;
 const ANIMATION_SPEED_MIN = 10;
 const ANIMATION_SPEED_MAX = 500;
 
@@ -35,10 +36,10 @@ const ShellSortTheory = () => (
 );
 
 // --- HELPER FUNCTIONS ---
-const generateRandomArray = () => Array.from({ length: ARRAY_SIZE }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
-const generateSortedArray = () => { const arr = generateRandomArray(); return arr.sort((a,b) => a-b); };
-const generateReverseSortedArray = () => generateSortedArray().reverse();
-const generateNearlySortedArray = () => { const arr = generateSortedArray(); for(let i=0; i<3; i++) { const i1=Math.floor(Math.random()*ARRAY_SIZE); const i2=Math.floor(Math.random()*ARRAY_SIZE); [arr[i1], arr[i2]] = [arr[i2], arr[i1]]; } return arr; };
+const generateRandomArray = (len = ARRAY_SIZE) => Array.from({ length: len }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
+const generateSortedArray = (len = ARRAY_SIZE) => { const step = Math.floor((MAX_VALUE - MIN_VALUE) / len); return Array.from({ length: len }, (_, i) => MIN_VALUE + i * step); };
+const generateReverseSortedArray = (len = ARRAY_SIZE) => generateSortedArray(len).reverse();
+const generateNearlySortedArray = (len = ARRAY_SIZE) => { const arr = generateSortedArray(len); for(let i=0; i<3; i++) { const i1=Math.floor(Math.random()*len); const i2=Math.floor(Math.random()*len); [arr[i1], arr[i2]] = [arr[i2], arr[i1]]; } return arr; };
 
 export default function ShellSortPage() {
   return (
@@ -135,14 +136,7 @@ function ShellSortVisualizer() {
     
     const currentData = timeline[currentStep];
     
-    // Nếu không phải Compare, bỏ qua (ví dụ bước thông báo Gap Change)
-    if (currentData.type !== 'COMPARE') {
-        handleStepForward();
-        return;
-    }
-
-    // Nếu là bước thông báo Gap (variables.i = -1)
-    if (currentData.variables.i === -1) {
+    if (currentData.type !== 'COMPARE' || currentData.variables.i === -1) {
         handleStepForward();
         return;
     }
@@ -183,7 +177,6 @@ function ShellSortVisualizer() {
 
     const gap = variables.gap || 0;
     
-    // Highlight phần tử đang xét (i)
     if (index === variables.i) return "bg-purple-500 shadow-[0_0_15px_rgba(147,51,234,0.6)]";
 
     if (indices.includes(index)) {
@@ -192,13 +185,11 @@ function ShellSortVisualizer() {
         if (type === 'INSERT') return "bg-pink-500";
     }
     
-    // Highlight các phần tử cùng nhóm Gap
-    // Nếu index % gap == i % gap, thì nó thuộc cùng nhóm đang xét, tô màu nhạt hơn để user dễ nhìn
     if (variables.i !== undefined && gap > 0) {
-        if (index % gap === variables.i % gap) return "bg-blue-600 opacity-80";
+        if (index % gap !== variables.i % gap) return "bg-slate-800 opacity-30";
     }
 
-    return "bg-cyan-600 opacity-40"; // Dim các phần tử khác
+    return "bg-cyan-600";
   };
 
   const getActiveLine = () => {
@@ -223,17 +214,25 @@ function ShellSortVisualizer() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full max-w-7xl">
         <div className="xl:col-span-2 space-y-6">
-            {/* VISUALIZER */}
-            <div className="flex items-end justify-center gap-2 h-96 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
-                <AnimatePresence>{practiceFeedback && (<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>{practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}</motion.div>)}</AnimatePresence>
-                {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
-                <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
-                    <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 3}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
-                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white shadow-sm">{value}</span>
-                    </motion.div>
-                    <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
+            <div className="flex flex-col gap-4">
+                
+                {/* 1. BAR CHART: GIẢM CAO TỪ 96 XUỐNG 64, NHÂN 2 */}
+                <div className="flex items-end justify-center gap-2 h-64 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
+                    <AnimatePresence>{practiceFeedback && (<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>{practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}</motion.div>)}</AnimatePresence>
+                    {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
+                    <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
+                        <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 2}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white shadow-sm">{value}</span>
+                        </motion.div>
+                        <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
+                    </div>
+                    )) : <div className="text-slate-500">Initializing...</div>}
                 </div>
-                )) : <div className="text-slate-500">Initializing...</div>}
+
+                {/* 2. GAP VIEW: GIỮ 40 (COMPACT) */}
+                <div className="h-40 w-full">
+                    <ShellSortGapView data={currentData} array={currentData.arrayState} />
+                </div>
             </div>
 
             {/* CONTROL PANEL */}
@@ -241,7 +240,7 @@ function ShellSortVisualizer() {
                 {isPracticeMode ? (
                   <div className="flex flex-col items-center justify-center space-y-4 py-2">
                     {isFinished ? (
-                        <div className="text-center"><h3 className="text-2xl font-bold text-green-400">🎉 Algorithm Finished!</h3><button onClick={handleRandomize} className="px-6 py-2 bg-slate-700 mt-2 rounded">Retry</button></div>
+                        <div className="text-center"><h3 className="text-2xl font-bold text-green-400">🎉 Finished!</h3><button onClick={handleRandomize} className="px-6 py-2 bg-slate-700 mt-2 rounded">Retry</button></div>
                     ) : (
                         <>
                             {currentData.type === 'COMPARE' && currentData.variables.i !== -1 ? (
@@ -269,7 +268,6 @@ function ShellSortVisualizer() {
                             <button onClick={handleRandomize} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-xs text-slate-300">Random</button>
                             <button onClick={handleSorted} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-xs text-slate-300">Sorted</button>
                             <button onClick={handleReverse} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-xs text-slate-300">Reverse</button>
-                            <button onClick={handleNearlySorted} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-xs text-slate-300">Nearly</button>
                         </div>
                         <div className="flex gap-2 w-full md:w-auto"><input type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)} className="flex-1 bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-xs" /><button onClick={handleUserSubmit} className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold">Load</button></div>
                     </div>
