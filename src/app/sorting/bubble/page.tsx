@@ -16,15 +16,17 @@ import { generateBubbleSortTimeline } from "@/lib/algorithms/bubbleSort";
 import { AnimationStep } from "@/lib/algorithms/types";
 import { bubbleSortCode, Language } from "@/lib/algorithms/codeSnippets";
 import { playCompareSound, playSwapSound, playSuccessSound, playErrorSound } from "@/lib/sound";
+// IMPORT COMPONENT MỚI
+import BubbleContainer from "@/components/Visualization/BubbleContainer";
 
 // --- 1. CONFIG ---
-const ARRAY_SIZE = 15;
+const ARRAY_SIZE = 10; // Giảm xuống 10-12 để bong bóng to đẹp
 const MIN_VALUE = 10;
-const MAX_VALUE = 100;
+const MAX_VALUE = 99;
 const ANIMATION_SPEED_MIN = 10;
 const ANIMATION_SPEED_MAX = 500;
 
-// --- THEORY COMPONENT (DETAILED VERSION) ---
+// --- THEORY (Giữ nguyên) ---
 const BubbleSortTheory = () => (
   <div className="space-y-6 text-slate-300 leading-relaxed">
     <div>
@@ -33,76 +35,35 @@ const BubbleSortTheory = () => (
       </h3>
       <p>
         <strong>Bubble Sort</strong> is the simplest sorting algorithm that works by repeatedly swapping the adjacent elements if they are in the wrong order.
-        The name comes from the way smaller elements slowly &quot;bubble&quot; to the top of the list (like air bubbles in water), while the largest elements &quot;sink&quot; to the bottom (the end of the list) quickly.
       </p>
     </div>
-
     <div>
       <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
         <Activity size={20} className="text-yellow-400" /> 2. How it works
       </h3>
       <ul className="list-disc pl-5 space-y-2 marker:text-yellow-500">
-        <li>The algorithm traverses the list from the beginning.</li>
-        <li>It compares each pair of adjacent items (e.g., item at <code>i</code> and <code>i+1</code>).</li>
-        <li>If they are in the wrong order (left &gt; right), it <strong>swaps</strong> them.</li>
-        <li>This process is repeated until no more swaps are needed, meaning the list is sorted.</li>
-        <li>After each full pass, the largest remaining element is guaranteed to be at its correct position.</li>
+        <li>Traverse from left and compare adjacent elements and the higher one is placed at right side.</li>
+        <li>In this way, the largest element moves to the rightmost end at first.</li>
+        <li>This process is then continued to find the second largest and place it and so on until the data is sorted.</li>
       </ul>
     </div>
-
     <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-      <h3 className="text-white font-bold mb-2">Step-by-step Example: [5, 1, 4, 2]</h3>
-      <div className="font-mono text-sm space-y-2">
-        <div>
-          <span className="text-yellow-400 font-bold">Pass 1:</span>
-          <ul className="pl-4 border-l-2 border-slate-700 ml-2 mt-1 space-y-1">
-             <li>Compare 5 &amp; 1 &rarr; Swap &rarr; [1, 5, 4, 2]</li>
-             <li>Compare 5 &amp; 4 &rarr; Swap &rarr; [1, 4, 5, 2]</li>
-             <li>Compare 5 &amp; 2 &rarr; Swap &rarr; [1, 4, 2, <span className="text-green-400 font-bold">5</span>]</li>
-             <li className="text-slate-500 italic text-xs">{`// 5 reached the end. It is sorted.`}</li>
-          </ul>
-        </div>
-        
-        <div>
-          <span className="text-yellow-400 font-bold">Pass 2:</span>
-          <ul className="pl-4 border-l-2 border-slate-700 ml-2 mt-1 space-y-1">
-             <li>Compare 1 &amp; 4 &rarr; OK (1 &lt; 4) &rarr; [1, 4, 2, 5]</li>
-             <li>Compare 4 &amp; 2 &rarr; Swap &rarr; [1, 2, <span className="text-green-400 font-bold">4, 5</span>]</li>
-             <li className="text-slate-500 italic text-xs">{`// 4 is sorted.`}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-        <Zap size={20} className="text-red-400" /> 3. Complexity Analysis
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-slate-800 p-3 rounded border border-slate-700">
-          <span className="text-slate-400 text-xs uppercase font-bold">Time Complexity</span>
-          <p className="text-lg font-bold text-red-400">O(n²)</p>
-          <p className="text-xs text-slate-500">Very slow on large datasets due to nested loops.</p>
-        </div>
-        <div className="bg-slate-800 p-3 rounded border border-slate-700">
-          <span className="text-slate-400 text-xs uppercase font-bold">Space Complexity</span>
-          <p className="text-lg font-bold text-green-400">O(1)</p>
-          <p className="text-xs text-slate-500">Auxiliary memory. It is an in-place sort.</p>
-        </div>
-      </div>
+        <h3 className="text-white font-bold mb-2">Complexity</h3>
+        <p className="text-green-400 font-mono">Best: O(n)</p>
+        <p className="text-red-400 font-mono">Average/Worst: O(n²)</p>
     </div>
   </div>
 );
 
 // --- HELPER FUNCTIONS ---
-const generateRandomArray = (length = ARRAY_SIZE) => Array.from({ length }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
-const generateSortedArray = (length = ARRAY_SIZE) => { const step = Math.floor((MAX_VALUE - MIN_VALUE) / length); return Array.from({ length }, (_, i) => MIN_VALUE + i * step); };
-const generateReverseSortedArray = (length = ARRAY_SIZE) => generateSortedArray(length).reverse();
-const generateNearlySortedArray = (length = ARRAY_SIZE) => { const arr = generateSortedArray(length); for (let i = 0; i < 3; i++) { const idx1 = Math.floor(Math.random() * length); const idx2 = Math.floor(Math.random() * length); [arr[idx1], arr[idx2]] = [arr[idx2], arr[idx1]]; } return arr; };
+const generateRandomArray = (len = ARRAY_SIZE) => Array.from({ length: len }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
+const generateSortedArray = (len = ARRAY_SIZE) => { const step = Math.floor((MAX_VALUE - MIN_VALUE) / len); return Array.from({ length: len }, (_, i) => MIN_VALUE + i * step); };
+const generateReverseSortedArray = (len = ARRAY_SIZE) => generateSortedArray(len).reverse();
+const generateNearlySortedArray = (len = ARRAY_SIZE) => { const arr = generateSortedArray(len); for (let i = 0; i < 3; i++) { const idx1 = Math.floor(Math.random() * len); const idx2 = Math.floor(Math.random() * len); [arr[idx1], arr[idx2]] = [arr[idx2], arr[idx1]]; } return arr; };
 
 export default function BubbleSortPage() {
   return (
-    <Suspense fallback={<div className="text-white text-center p-10">Loading Algorithm...</div>}>
+    <Suspense fallback={<div className="text-white text-center p-10">Loading...</div>}>
       <BubbleSortVisualizer />
     </Suspense>
   );
@@ -111,7 +72,7 @@ export default function BubbleSortPage() {
 function BubbleSortVisualizer() {
   const searchParams = useSearchParams();
 
-  // --- 2. STATE ---
+  // --- STATE ---
   const [initialArray, setInitialArray] = useState<number[]>([]);
   const [timeline, setTimeline] = useState<AnimationStep[]>([]);
   const [userInput, setUserInput] = useState("");
@@ -130,7 +91,7 @@ function BubbleSortVisualizer() {
   const startTimeRef = useRef<number | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // --- 3. INIT LOGIC ---
+  // --- INIT ---
   useEffect(() => {
     const urlArr = searchParams.get('arr');
     let startArr: number[] = [];
@@ -156,14 +117,13 @@ function BubbleSortVisualizer() {
     window.history.replaceState({ path: newUrl }, '', newUrl);
   };
 
-  // --- 4. EFFECTS ---
+  // --- EFFECTS ---
   useEffect(() => {
     if (isMuted || currentStep === 0) return;
     const stepData = timeline[currentStep];
     if (!stepData) return;
     if (stepData.type === 'COMPARE') {
-      const val = Math.max(stepData.variables.compareVal1 || 0, stepData.variables.compareVal2 || 0);
-      playCompareSound(val);
+      playCompareSound(0);
     } else if (stepData.type === 'SWAP') {
       playSwapSound();
     } else if (stepData.type === 'SORTED' && currentStep === timeline.length - 1) {
@@ -193,7 +153,7 @@ function BubbleSortVisualizer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, speed, timeline.length, currentStep, isPracticeMode]);
 
-  // --- 6. HANDLERS ---
+  // --- HANDLERS ---
   const handleRandomize = () => loadNewArray(generateRandomArray());
   const handleSorted = () => loadNewArray(generateSortedArray());
   const handleReverse = () => loadNewArray(generateReverseSortedArray());
@@ -207,56 +167,53 @@ function BubbleSortVisualizer() {
   const handleShare = () => { navigator.clipboard.writeText(window.location.href); alert("Copied URL to clipboard!"); };
   const handlePracticeModeToggle = () => { setIsPracticeMode(!isPracticeMode); setIsPlaying(false); setPracticeFeedback(null); };
 
-  // --- LOGIC PRACTICE MODE (ĐÃ CẬP NHẬT) ---
-  const handlePracticeDecision = (decision: 'SWAP' | 'NO_SWAP') => {
-    // SỬA: Chặn nếu đã xong
-    if (currentStep >= timeline.length - 1) {
-        setPracticeFeedback({ type: 'success', msg: 'Algorithm Finished! Good job.' });
+  // --- PRACTICE LOGIC ---
+  const handlePracticeDecision = (decision: 'SWAP' | 'NO') => {
+    if (currentStep >= timeline.length - 1) { setPracticeFeedback({ type: 'success', msg: 'Finished!' }); return; }
+    const currentData = timeline[currentStep];
+    
+    // Nếu không phải Compare thì auto next
+    if (currentData.type !== 'COMPARE') {
+        handleStepForward();
         return;
     }
 
-    const currentData = timeline[currentStep];
     const val1 = currentData.variables.compareVal1 || 0;
     const val2 = currentData.variables.compareVal2 || 0;
-    
-    // Bubble sort: Nếu đứng trước > đứng sau thì SWAP, ngược lại NO SWAP
-    const shouldSwap = val1 > val2;
-    const isCorrect = (decision === 'SWAP' && shouldSwap) || (decision === 'NO_SWAP' && !shouldSwap);
+    const shouldSwap = val1 > val2; // Bubble sort: Swap nếu trái > phải
+
+    let isCorrect = false;
+    if (decision === 'SWAP' && shouldSwap) isCorrect = true;
+    else if (decision === 'NO' && !shouldSwap) isCorrect = true;
 
     if (isCorrect) {
       setPracticeScore(s => s + 10);
-      setPracticeFeedback({ type: 'success', msg: 'Correct! +10 pts' });
+      setPracticeFeedback({ type: 'success', msg: 'Correct!' });
       playSuccessSound();
       
-      // Auto move logic
-      if (shouldSwap) {
-         if (currentStep < timeline.length - 2) setCurrentStep(c => c + 2);
-         else handleStepForward();
-      } else {
-         handleStepForward();
-      }
+      if (shouldSwap && currentStep < timeline.length - 2) setCurrentStep(c => c + 2); // Nhảy qua bước Swap
+      else handleStepForward();
     } else {
       setPracticeScore(s => Math.max(0, s - 5));
-      setPracticeFeedback({ type: 'error', msg: 'Wrong! Try again. -5 pts' });
+      setPracticeFeedback({ type: 'error', msg: 'Wrong decision.' });
       playErrorSound();
     }
     setTimeout(() => setPracticeFeedback(null), 1000);
   };
 
-  // --- 7. RENDER ---
+  // --- RENDER ---
   const currentData = timeline[currentStep] || { arrayState: initialArray, indices: [], sortedIndices: [], type: null, message: "Ready...", variables: { i: 0, j: 0 }, counts: { comparisons: 0, swaps: 0 } };
-  const isFinished = currentStep >= timeline.length - 1; // Check đã xong chưa
+  const isFinished = currentStep >= timeline.length - 1;
 
   const getBarColor = (index: number) => {
     if (!timeline.length) return "bg-cyan-500";
-    if (currentData.sortedIndices.includes(index)) return "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]";
-    const { type, indices } = currentData;
+    const { type, indices, sortedIndices } = currentData;
+    if (sortedIndices.includes(index)) return "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]";
     if (indices.includes(index)) {
-        if (type === 'SWAP') return "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)]";
         if (type === 'COMPARE') return "bg-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)]";
-        if (type === 'SORTED') return "bg-green-500";
+        if (type === 'SWAP') return "bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.6)]";
     }
-    return "bg-cyan-500";
+    return "bg-cyan-600";
   };
 
   const getActiveLine = () => {
@@ -269,12 +226,10 @@ function BubbleSortVisualizer() {
 
   const [isClient, setIsClient] = useState(false);
   useEffect(() => { setIsClient(true) }, []);
-  if (!isClient) return <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">Loading Visualizer...</div>;
+  if (!isClient) return <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">Loading...</div>;
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-slate-950 text-white p-4 md:p-8 relative">
-      
-      {/* THEORY MODAL */}
       <AnimatePresence>
         {isTheoryOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setIsTheoryOpen(false)}>
@@ -286,7 +241,6 @@ function BubbleSortVisualizer() {
         )}
       </AnimatePresence>
 
-      {/* TOP NAV */}
       <div className="w-full max-w-7xl mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <Link href="/" className="flex items-center text-slate-400 hover:text-white gap-2"><ArrowLeft size={20} /> Dashboard</Link>
         <div className="flex items-center gap-3">
@@ -303,39 +257,39 @@ function BubbleSortVisualizer() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full max-w-7xl">
         <div className="xl:col-span-2 space-y-6">
             
-            {/* VISUALIZER */}
-            <div className="flex items-end justify-center gap-2 h-96 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
-                <AnimatePresence>
-                  {practiceFeedback && (
-                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-                       {practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}
-                     </motion.div>
-                  )}
-                </AnimatePresence>
-                {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
-                  <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
-                      <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 3}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
-                          <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-cyan-200">{value}</span>
-                      </motion.div>
-                      <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
-                  </div>
-                )) : <div className="text-slate-500">Initializing...</div>}
-            </div>
+            {/* CONTAINER VISUALIZER: CHỨA 2 VIEW */}
+            <div className="flex flex-col gap-4">
+                
+                {/* 1. ARRAY BAR CHART */}
+                <div className="flex items-end justify-center gap-2 h-48 w-full bg-slate-900/50 p-8 rounded-xl border border-slate-800 relative">
+                    <AnimatePresence>
+                    {practiceFeedback && (
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`absolute top-10 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full font-bold shadow-xl z-20 ${practiceFeedback.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+                        {practiceFeedback.type === 'success' ? <CheckCircle2 className="inline mr-2" /> : <ThumbsDown className="inline mr-2" />}{practiceFeedback.msg}
+                        </motion.div>
+                    )}
+                    </AnimatePresence>
+                    {currentData.arrayState.length > 0 ? currentData.arrayState.map((value, index) => (
+                    <div key={index} className="flex-1 max-w-10 flex flex-col items-center gap-2">
+                        <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 25 }} style={{ height: `${value * 1.2}px` }} className={`w-full rounded-t-md relative ${getBarColor(index)}`}>
+                            <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white shadow-sm">{value}</span>
+                        </motion.div>
+                        <span className="text-[10px] text-slate-500 font-mono font-semibold">{index}</span>
+                    </div>
+                    )) : <div className="text-slate-500">Initializing...</div>}
+                </div>
 
-            {/* LEGEND */}
-            <div className="flex flex-wrap justify-center gap-6 pb-2">
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-cyan-500 rounded"></div><span className="text-slate-400 text-xs">Idle</span></div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-yellow-400 rounded"></div><span className="text-slate-400 text-xs">Compare</span></div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-red-500 rounded"></div><span className="text-slate-400 text-xs">Swap</span></div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-green-500 rounded"></div><span className="text-slate-400 text-xs">Sorted</span></div>
+                {/* 2. BUBBLE CONTAINER (VIEW MỚI) */}
+                <div className="h-64 w-full">
+                    <BubbleContainer data={currentData} array={currentData.arrayState} />
+                </div>
+
             </div>
 
             {/* CONTROL PANEL */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-6 relative overflow-hidden">
                 {isPracticeMode ? (
                   <div className="flex flex-col items-center justify-center space-y-4 py-2 animate-in fade-in duration-300">
-                    
-                    {/* SỬA: Hiển thị bảng tổng kết nếu Finished */}
                     {isFinished ? (
                         <div className="text-center space-y-2">
                             <h3 className="text-2xl font-bold text-green-400">🎉 Algorithm Finished!</h3>
@@ -344,22 +298,27 @@ function BubbleSortVisualizer() {
                         </div>
                     ) : (
                         <>
-                            <div className="flex items-center gap-4 mb-2">
-                               <span className="text-purple-400 font-bold uppercase tracking-widest text-sm">Target:</span>
-                               <span className="text-white text-lg">Compare <span className="text-yellow-400 font-bold">{currentData.variables.compareVal1}</span> & <span className="text-yellow-400 font-bold">{currentData.variables.compareVal2}</span></span>
-                            </div>
-                            
                             {currentData.type === 'COMPARE' ? (
-                              <div className="flex gap-4">
-                                <button onClick={() => handlePracticeDecision('SWAP')} className="px-8 py-4 bg-red-600 hover:bg-red-500 hover:scale-105 active:scale-95 transition-all rounded-xl font-bold text-xl shadow-lg shadow-red-900/50 flex items-center gap-2"><ArrowRightLeft /> SWAP</button>
-                                <button onClick={() => handlePracticeDecision('NO_SWAP')} className="px-8 py-4 bg-green-600 hover:bg-green-500 hover:scale-105 active:scale-95 transition-all rounded-xl font-bold text-xl shadow-lg shadow-green-900/50 flex items-center gap-2"><CheckCircle2 /> NO SWAP</button>
-                              </div>
+                                <>
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <span className="text-purple-400 font-bold uppercase tracking-widest text-sm">Question:</span>
+                                        <span className="text-white text-lg">
+                                            Is <span className="text-yellow-400 font-bold">{currentData.variables.compareVal1}</span> &gt; <span className="text-yellow-400 font-bold">{currentData.variables.compareVal2}</span>? (Swap needed?)
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button onClick={() => handlePracticeDecision('SWAP')} className="px-6 py-4 bg-orange-600 hover:bg-orange-500 hover:scale-105 transition-all rounded-xl font-bold shadow-lg flex items-center gap-2"><ArrowRightLeft /> YES (Swap)</button>
+                                        <button onClick={() => handlePracticeDecision('NO')} className="px-6 py-4 bg-slate-600 hover:bg-slate-500 hover:scale-105 transition-all rounded-xl font-bold shadow-lg flex items-center gap-2"><CheckCircle2 /> NO (Keep)</button>
+                                    </div>
+                                </>
                             ) : (
-                              <div className="text-slate-400 italic">Wait for next comparison... or <button onClick={handleStepForward} className="text-cyan-400 underline">Skip</button></div>
+                                <div className="text-center">
+                                    <p className="text-slate-400 italic mb-2">Processing...</p>
+                                    <button onClick={handleStepForward} className="px-4 py-2 bg-slate-700 rounded text-sm hover:bg-slate-600">Next Step</button>
+                                </div>
                             )}
                         </>
                     )}
-
                     <div className="absolute top-4 right-6 flex items-center gap-2 bg-slate-950 px-4 py-2 rounded-full border border-purple-500/30">
                        <Trophy className="text-yellow-500" size={18} /><span className="font-bold text-white">Score: {practiceScore}</span>
                     </div>
@@ -378,7 +337,6 @@ function BubbleSortVisualizer() {
                             <button onClick={handleUserSubmit} className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold flex items-center gap-2"><CheckCircle2 size={14} /> Load</button>
                         </div>
                     </div>
-
                     <div className="space-y-4">
                         <div className="flex justify-between text-[10px] text-slate-500 font-mono uppercase"><span>Step {currentStep}</span><span>Total {timeline.length - 1}</span></div>
                         <input type="range" min="0" max={Math.max(0, timeline.length - 1)} value={currentStep} onChange={handleScrub} className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 hover:accent-cyan-400" />
@@ -408,10 +366,10 @@ function BubbleSortVisualizer() {
                  <div className="w-full md:w-64 space-y-2">
                     <div className="flex items-center gap-2 text-purple-400 text-sm font-bold uppercase tracking-wider">Variables</div>
                     <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">i</span><span className="text-white font-mono font-bold">{currentData.variables.i}</span></div>
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">j</span><span className="text-white font-mono font-bold">{currentData.variables.j}</span></div>
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">arr[j]</span><span className="text-yellow-400 font-mono font-bold">{currentData.variables.compareVal1 ?? '-'}</span></div>
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">arr[j+1]</span><span className="text-yellow-400 font-mono font-bold">{currentData.variables.compareVal2 ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">i (pass)</span><span className="text-white font-mono font-bold">{currentData.variables.i ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">j (curr)</span><span className="text-white font-mono font-bold">{currentData.variables.j ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Val 1</span><span className="text-blue-400 font-mono font-bold">{currentData.variables.compareVal1 ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Val 2</span><span className="text-orange-400 font-mono font-bold">{currentData.variables.compareVal2 ?? '-'}</span></div>
                     </div>
                  </div>
             </div>
