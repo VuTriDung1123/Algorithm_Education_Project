@@ -11,7 +11,7 @@ export const createArrayFromInput = (input: number[], capacity: number): ArrayNo
       index: i,
       value: i < input.length ? input[i] : null,
       address: `0x${(START_ADDRESS + i * 4).toString(16).toUpperCase()}`,
-      state: 'DEFAULT' as const, // Cast to literal type
+      state: 'DEFAULT' as const,
       isVisible: true,
     }));
     return nodes;
@@ -161,4 +161,96 @@ export function* generateUpdateSteps(currentArray: ArrayNode[], index: number, n
     
     // Reset
     arr[index].state = 'DEFAULT';
+}
+
+
+// 5. SORTED INSERT (Tự tìm chỗ chèn)
+export function* generateSortedInsertSteps(
+    currentArray: ArrayNode[], 
+    value: number, 
+    size: number, 
+    capacity: number
+): Generator<DSAnimationStep> {
+    const arr = JSON.parse(JSON.stringify(currentArray));
+
+    if (size >= capacity) {
+        yield { arrayState: arr, message: "Array is Full!", codeLine: 1 };
+        return;
+    }
+
+    // Bước 1: Tìm vị trí (Linear scan for simplicity visual)
+    let insertPos = size;
+    for (let i = 0; i < size; i++) {
+        arr[i].state = 'ACCESS';
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Comparing ${value} with ${arr[i].value}...` };
+        
+        if (value < arr[i].value!) {
+            insertPos = i;
+            arr[i].state = 'SELECTED';
+            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Found position at index ${i} (since ${value} < ${arr[i].value})` };
+            break;
+        }
+        arr[i].state = 'DEFAULT';
+    }
+
+    // Bước 2: Dịch chuyển (Shift Right)
+    if (insertPos < size) {
+        for (let i = insertPos; i < size; i++) arr[i].state = 'SHIFTING';
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: "Shifting elements to make space..." };
+        
+        for (let i = size; i > insertPos; i--) {
+            arr[i].value = arr[i-1].value;
+            arr[i].id = arr[i-1].id;
+            arr[i].state = 'SHIFTING';
+        }
+    }
+
+    // Bước 3: Chèn
+    arr[insertPos] = { ...arr[insertPos], value, id: generateId(), state: 'ACCESS' };
+    // Reset colors
+    for(let i=0; i<=size; i++) if (i !== insertPos) arr[i].state = 'DEFAULT';
+    
+    yield { arrayState: arr, message: `Inserted ${value} at sorted position ${insertPos}.` };
+}
+
+// 6. BINARY SEARCH
+export function* generateBinarySearchSteps(
+    currentArray: ArrayNode[],
+    target: number,
+    size: number
+): Generator<DSAnimationStep> {
+    const arr = JSON.parse(JSON.stringify(currentArray));
+    let left = 0;
+    let right = size - 1;
+
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        
+        // Highlight phạm vi đang xét
+        for (let i = 0; i < size; i++) {
+            if (i >= left && i <= right) arr[i].state = 'SHIFTING'; // Dùng màu cam nhạt làm vùng range
+            else arr[i].state = 'DEFAULT'; // Ngoài vùng làm mờ
+        }
+        arr[mid].state = 'SELECTED'; // Mid màu vàng
+
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Range [${left}, ${right}]. Mid index ${mid} (${arr[mid].value}).` };
+
+        if (arr[mid].value === target) {
+            arr[mid].state = 'FOUND';
+            yield { arrayState: arr, message: `Found ${target} at index ${mid}!` };
+            return;
+        }
+
+        if (arr[mid].value! < target) {
+            left = mid + 1;
+            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `${arr[mid].value} < ${target}. Ignore left half.` };
+        } else {
+            right = mid - 1;
+            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `${arr[mid].value} > ${target}. Ignore right half.` };
+        }
+    }
+
+    // Reset
+    arr.forEach((n: any) => n.state = 'DEFAULT');
+    yield { arrayState: arr, message: `${target} not found.` };
 }
