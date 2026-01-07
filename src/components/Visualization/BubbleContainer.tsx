@@ -62,7 +62,7 @@ export default function BubbleContainer({ data, array }: BubbleContainerProps) {
           return (
             <motion.div
               layout // Quan trọng: Giúp hoán đổi vị trí mượt mà
-              key={value} // Dùng value làm key nếu mảng unique, hoặc kết hợp index nếu cần (nhưng value giúp motion hiểu là object di chuyển)
+              key={index} // Dùng value làm key nếu mảng unique, hoặc kết hợp index nếu cần (nhưng value giúp motion hiểu là object di chuyển)
               // Lưu ý: Nếu dùng key={index} thì nó sẽ không bay qua nhau mà chỉ đổi nội dung. 
               // Để animation đẹp nhất với mảng số trùng nhau, ta nên dùng key unique (ví dụ object {id, val}). 
               // Tuy nhiên ở đây data là number[], nên ta chấp nhận motion có thể không perfect 100% nếu số trùng, 
