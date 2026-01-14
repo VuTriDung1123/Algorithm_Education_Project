@@ -3,6 +3,7 @@ import { ArrayNode, DSAnimationStep } from './types';
 // Hàm tạo ID ngẫu nhiên
 const generateId = () => Math.random().toString(36).substr(2, 9);
 const START_ADDRESS = 0x1000;
+const SECOND_ADDRESS = 0x2000;
 
 // --- 0. CREATE OPERATION ---
 export const createArrayFromInput = (input: number[], capacity: number): ArrayNode[] => {
@@ -146,7 +147,6 @@ export function* generateMinMaxSteps(currentArray: ArrayNode[], size: number, ty
 
 // --- 4. UPDATE OPERATION ---
 export function* generateUpdateSteps(currentArray: ArrayNode[], index: number, newValue: number, size: number): Generator<DSAnimationStep> {
-    // FIX LỖI: dùng đúng tên biến currentArray thay vì arrData
     const arr = JSON.parse(JSON.stringify(currentArray));
     if (index >= size) { yield { arrayState: arr, message: "Index out of bounds" }; return; }
 
@@ -163,8 +163,7 @@ export function* generateUpdateSteps(currentArray: ArrayNode[], index: number, n
     arr[index].state = 'DEFAULT';
 }
 
-
-// 5. SORTED INSERT (Tự tìm chỗ chèn)
+// 5. SORTED INSERT
 export function* generateSortedInsertSteps(
     currentArray: ArrayNode[], 
     value: number, 
@@ -178,7 +177,6 @@ export function* generateSortedInsertSteps(
         return;
     }
 
-    // Bước 1: Tìm vị trí (Linear scan for simplicity visual)
     let insertPos = size;
     for (let i = 0; i < size; i++) {
         arr[i].state = 'ACCESS';
@@ -193,7 +191,6 @@ export function* generateSortedInsertSteps(
         arr[i].state = 'DEFAULT';
     }
 
-    // Bước 2: Dịch chuyển (Shift Right)
     if (insertPos < size) {
         for (let i = insertPos; i < size; i++) arr[i].state = 'SHIFTING';
         yield { arrayState: JSON.parse(JSON.stringify(arr)), message: "Shifting elements to make space..." };
@@ -205,9 +202,7 @@ export function* generateSortedInsertSteps(
         }
     }
 
-    // Bước 3: Chèn
     arr[insertPos] = { ...arr[insertPos], value, id: generateId(), state: 'ACCESS' };
-    // Reset colors
     for(let i=0; i<=size; i++) if (i !== insertPos) arr[i].state = 'DEFAULT';
     
     yield { arrayState: arr, message: `Inserted ${value} at sorted position ${insertPos}.` };
@@ -226,12 +221,11 @@ export function* generateBinarySearchSteps(
     while (left <= right) {
         const mid = Math.floor((left + right) / 2);
         
-        // Highlight phạm vi đang xét
         for (let i = 0; i < size; i++) {
-            if (i >= left && i <= right) arr[i].state = 'SHIFTING'; // Dùng màu cam nhạt làm vùng range
-            else arr[i].state = 'DEFAULT'; // Ngoài vùng làm mờ
+            if (i >= left && i <= right) arr[i].state = 'SHIFTING'; 
+            else arr[i].state = 'DEFAULT'; 
         }
-        arr[mid].state = 'SELECTED'; // Mid màu vàng
+        arr[mid].state = 'SELECTED'; 
 
         yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Range [${left}, ${right}]. Mid index ${mid} (${arr[mid].value}).` };
 
@@ -250,7 +244,96 @@ export function* generateBinarySearchSteps(
         }
     }
 
-    // Reset
     arr.forEach((n: any) => n.state = 'DEFAULT');
     yield { arrayState: arr, message: `${target} not found.` };
+}
+
+// Helper: Tạo mảng rỗng cho Prefix Sum
+export const createPrefixArrayEmpty = (capacity: number): ArrayNode[] => {
+    return Array.from({ length: capacity }, (_, i) => ({
+        id: `prefix-${i}-${generateId()}`,
+        index: i,
+        value: null, 
+        address: `0x${(SECOND_ADDRESS + i * 4).toString(16).toUpperCase()}`,
+        state: 'DEFAULT',
+        isVisible: true,
+    }));
+};
+
+// 7. BUILD PREFIX SUM
+export function* generateBuildPrefixSumSteps(
+    currentArray: ArrayNode[],
+    size: number,
+    capacity: number
+): Generator<DSAnimationStep> {
+    const arr = JSON.parse(JSON.stringify(currentArray)); 
+    let prefixArr: ArrayNode[] = createPrefixArrayEmpty(capacity);
+    
+    yield { 
+        arrayState: arr, 
+        secondArrayState: JSON.parse(JSON.stringify(prefixArr)),
+        message: "Preprocessing: Build Prefix Sum Array P[i] = A[0] + ... + A[i]."
+    };
+
+    let runningSum = 0;
+    for (let i = 0; i < size; i++) {
+        arr[i].state = 'ACCESS';
+        runningSum += arr[i].value!;
+        
+        prefixArr[i].value = runningSum;
+        prefixArr[i].state = 'SELECTED'; 
+
+        yield {
+            arrayState: JSON.parse(JSON.stringify(arr)),
+            secondArrayState: JSON.parse(JSON.stringify(prefixArr)),
+            message: `P[${i}] = P[${i-1} ?? 0] + A[${i}] = ${runningSum}`
+        };
+
+        arr[i].state = 'DEFAULT';
+        prefixArr[i].state = 'DEFAULT'; 
+    }
+
+    yield {
+        arrayState: arr,
+        secondArrayState: prefixArr,
+        message: "Prefix Sum Array built! Ready for O(1) queries."
+    };
+}
+
+// 8. RANGE SUM QUERY
+export function* generatePrefixSumQuerySteps(
+    currentArray: ArrayNode[],
+    prefixArray: ArrayNode[], 
+    start: number,
+    end: number,
+    size: number
+): Generator<DSAnimationStep> {
+    const arr = JSON.parse(JSON.stringify(currentArray));
+    const prefix = JSON.parse(JSON.stringify(prefixArray));
+
+    if (start < 0 || end >= size || start > end) {
+        yield { arrayState: arr, secondArrayState: prefix, message: "Invalid Range!" };
+        return;
+    }
+
+    for(let i = start; i <= end; i++) arr[i].state = 'SHIFTING'; 
+
+    prefix[end].state = 'FOUND'; 
+
+    let result = prefix[end].value!;
+    let formula = `Sum(${start}, ${end}) = P[${end}]`;
+
+    if (start > 0) {
+        prefix[start - 1].state = 'DELETED'; 
+        result -= prefix[start - 1].value!;
+        formula += ` - P[${start - 1}]`;
+    } else {
+        formula += ` (L=0, take P[R])`;
+    }
+
+    yield {
+        arrayState: arr,
+        secondArrayState: prefix,
+        message: `${formula} = ${result}. Time: O(1).`
+    };
 }
