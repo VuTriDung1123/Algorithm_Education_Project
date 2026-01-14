@@ -26,7 +26,9 @@ export type ArrayOperation =
 
 export interface DSAnimationStep {
   arrayState: ArrayNode[];
+  // THÊM DÒNG NÀY: Để chứa trạng thái mảng thứ 2 (Prefix Sum)
+  secondArrayState?: ArrayNode[]; 
   message: string;
   codeLine?: number;
-  auxiliary?: Record<string, unknown>; // Fix lỗi 'any'
+  auxiliary?: Record<string, unknown>;
 }
