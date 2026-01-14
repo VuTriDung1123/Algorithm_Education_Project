@@ -1,11 +1,9 @@
 import { ArrayNode, DSAnimationStep } from './types';
 
-// Hàm tạo ID ngẫu nhiên
 const generateId = () => Math.random().toString(36).substr(2, 9);
 const START_ADDRESS = 0x1000;
 const SECOND_ADDRESS = 0x2000;
 
-// --- 0. CREATE OPERATION ---
 export const createArrayFromInput = (input: number[], capacity: number): ArrayNode[] => {
     const nodes = Array.from({ length: capacity }, (_, i) => ({
       id: `node-${i}-${generateId()}`,
@@ -23,232 +21,196 @@ export const createEmptyArray = (capacity: number): ArrayNode[] => {
 };
 
 // --- 1. INSERT OPERATION ---
-export function* generateInsertSteps(
-  currentArray: ArrayNode[], 
-  index: number, 
-  value: number, 
-  size: number, 
-  capacity: number
-): Generator<DSAnimationStep> {
-  const arr = JSON.parse(JSON.stringify(currentArray));
-
-  if (size >= capacity) {
-    yield { arrayState: arr, message: "Error: Array is Full! (Capacity reached)", codeLine: 1 };
-    return;
-  }
-
-  // Highlight vị trí muốn chèn
-  arr[index].state = 'SELECTED';
-  const isTail = index === size;
-  yield { arrayState: JSON.parse(JSON.stringify(arr)), message: isTail ? `Insert at Tail (Index ${index}). No shifting needed.` : `Target Index: ${index}. Shifting required...`, codeLine: 2 };
-
-  // Dịch chuyển
-  if (index < size) {
-    for (let i = index; i < size; i++) {
-        arr[i].state = 'SHIFTING';
-    }
-    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Shift elements from ${index} to ${size - 1} to the right.`, codeLine: 3 };
-
-    for (let i = size; i > index; i--) {
-        arr[i].value = arr[i-1].value;
-        arr[i].id = arr[i-1].id; 
-        arr[i].state = 'SHIFTING';
-    }
+export function* generateInsertSteps(currentArray: ArrayNode[], index: number, value: number, size: number, capacity: number): Generator<DSAnimationStep> {
+    const arr = JSON.parse(JSON.stringify(currentArray));
     
-    // Reset lỗ trống
-    arr[index] = { ...arr[index], value: null, id: generateId(), state: 'SELECTED' };
-    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: "Created space at index " + index, codeLine: 4 };
-  }
+    // Check Capacity
+    if (size >= capacity) { 
+        yield { arrayState: arr, message: "Error: Array is Full!", codeLine: 2 }; 
+        return; 
+    }
 
-  // Chèn
-  arr[index].value = value;
-  arr[index].id = generateId(); 
-  arr[index].state = 'ACCESS'; 
-  
-  // Reset
-  for(let i=0; i<=size; i++) { if (i !== index) arr[i].state = 'DEFAULT'; }
+    const isTail = index === size;
+    const isHead = index === 0;
 
-  yield { arrayState: arr, message: `Inserted ${value} at index ${index}. Time Complexity: ${isTail ? 'O(1)' : 'O(N)'}.`, codeLine: 5 };
+    // Highlight Loop / Shift
+    if (!isTail) {
+        // Line 3: Start Loop (Shift)
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Prepare to shift elements from index ${index} to right.`, codeLine: 3 };
+        
+        for (let i = size; i > index; i--) {
+            arr[i].value = arr[i-1].value;
+            arr[i].id = arr[i-1].id;
+            arr[i].state = 'SHIFTING';
+        }
+        // Line 4: Shifting done inside loop
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Shifted elements to make space at index ${index}.`, codeLine: 4 };
+    }
+
+    // Line 5: Insert (Assign Value)
+    arr[index] = { ...arr[index], value, id: generateId(), state: 'ACCESS' };
+    
+    // Reset colors
+    for(let i=0; i<=size; i++) if (i !== index) arr[i].state = 'DEFAULT';
+    
+    // Line 6: Size++
+    yield { arrayState: arr, message: `Inserted ${value} at index ${index}.`, codeLine: isTail ? 3 : 5 };
 }
 
 // --- 2. DELETE OPERATION ---
-export function* generateDeleteSteps(
-    currentArray: ArrayNode[],
-    index: number,
-    size: number
-): Generator<DSAnimationStep> {
+export function* generateDeleteSteps(currentArray: ArrayNode[], index: number, size: number): Generator<DSAnimationStep> {
     const arr = JSON.parse(JSON.stringify(currentArray));
+    
+    // Line 2: Check Index
+    if (index < 0 || index >= size) { 
+        yield { arrayState: arr, message: "Index out of bounds", codeLine: 2 }; 
+        return; 
+    }
 
     arr[index].state = 'DELETED';
-    const isTail = index === size - 1;
-    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: isTail ? `Deleting Tail (Index ${index}). No shifting needed.` : `Mark index ${index} for deletion. Shifting will be required.`, codeLine: 1 };
-
+    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Deleting value at index ${index}.`, codeLine: 3 };
     arr[index].value = null;
-    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Value cleared.`, codeLine: 2 };
 
+    // Shift Logic
     if (index < size - 1) {
-        for(let i = index + 1; i < size; i++) arr[i].state = 'SHIFTING';
-        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Shift elements from ${index + 1} to left.`, codeLine: 3 };
-
+        // Line 4: Loop Shift
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Shifting elements from index ${index+1} to left.`, codeLine: 4 };
         for (let i = index; i < size - 1; i++) {
             arr[i].value = arr[i+1].value;
             arr[i].id = arr[i+1].id;
             arr[i].state = 'SHIFTING';
         }
         arr[size - 1] = { ...arr[size - 1], value: null, id: generateId(), state: 'DEFAULT' };
+        // Line 5: Shift inside loop
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: "Shift complete.", codeLine: 5 };
     }
 
-    arr.forEach((node: ArrayNode) => node.state = 'DEFAULT');
-    yield { arrayState: arr, message: `Deletion complete. Time Complexity: ${isTail ? 'O(1)' : 'O(N)'}.`, codeLine: 4 };
+    arr.forEach((n:any) => n.state = 'DEFAULT');
+    // Line 6: Size--
+    yield { arrayState: arr, message: `Deleted. Size is now ${size - 1}.`, codeLine: 6 };
 }
 
-// --- 3. SEARCH & MIN/MAX ---
+// --- 3. SEARCH LINEAR ---
 export function* generateSearchSteps(currentArray: ArrayNode[], target: number, size: number): Generator<DSAnimationStep> {
     const arr = JSON.parse(JSON.stringify(currentArray));
+    
     for (let i = 0; i < size; i++) {
         arr[i].state = 'ACCESS';
-        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Checking index ${i}: Is ${arr[i].value} == ${target}?` };
+        // Line 2: Loop check
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Checking index ${i}...`, codeLine: 2 };
+        
+        // Line 3: Compare
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Is ${arr[i].value} == ${target}?`, codeLine: 3 };
+
         if (arr[i].value === target) {
             arr[i].state = 'FOUND';
-            yield { arrayState: arr, message: `Found ${target} at index ${i}!` };
+            // Line 4: Return Found
+            yield { arrayState: arr, message: `Found ${target} at index ${i}!`, codeLine: 4 };
             return;
         }
         arr[i].state = 'DEFAULT';
     }
-    yield { arrayState: arr, message: `Value ${target} not found.` };
+    // Line 5: Return -1
+    yield { arrayState: arr, message: `Value ${target} not found.`, codeLine: 5 };
 }
 
-export function* generateMinMaxSteps(currentArray: ArrayNode[], size: number, type: 'MIN' | 'MAX'): Generator<DSAnimationStep> {
-    const arr = JSON.parse(JSON.stringify(currentArray));
-    if (size === 0) { yield { arrayState: arr, message: "Array is empty." }; return; }
-
-    let bestIdx = 0;
-    arr[0].state = 'SELECTED'; 
-    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Assume first element ${arr[0].value} is ${type}.` };
-
-    for (let i = 1; i < size; i++) {
-        arr[i].state = 'ACCESS'; 
-        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Compare ${arr[i].value} with current ${type} (${arr[bestIdx].value}).` };
-
-        const isBetter = type === 'MIN' ? (arr[i].value! < arr[bestIdx].value!) : (arr[i].value! > arr[bestIdx].value!);
-        
-        if (isBetter) {
-            arr[bestIdx].state = 'DEFAULT'; 
-            bestIdx = i;
-            arr[bestIdx].state = 'SELECTED'; 
-            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `New ${type} found: ${arr[i].value} at index ${i}.` };
-        } else {
-            arr[i].state = 'DEFAULT';
-        }
-    }
-    arr[bestIdx].state = 'FOUND'; 
-    yield { arrayState: arr, message: `Final ${type} is ${arr[bestIdx].value} at index ${bestIdx}.` };
-}
-
-// --- 4. UPDATE OPERATION ---
+// --- 4. UPDATE ---
 export function* generateUpdateSteps(currentArray: ArrayNode[], index: number, newValue: number, size: number): Generator<DSAnimationStep> {
     const arr = JSON.parse(JSON.stringify(currentArray));
-    if (index >= size) { yield { arrayState: arr, message: "Index out of bounds" }; return; }
-
-    // Highlight
+    // Line 2: Check
+    if(index >= size) { yield { arrayState: arr, message: "Error: Index out of bounds", codeLine: 2 }; return; }
+    
     arr[index].state = 'ACCESS';
-    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Accessing Index ${index}. Current value: ${arr[index].value}` };
-
-    // Update
+    yield {arrayState: JSON.parse(JSON.stringify(arr)), message: `Accessing index ${index}...`, codeLine: 2};
+    
+    // Line 3: Assign
     arr[index].value = newValue;
     arr[index].state = 'FOUND';
-    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Updated Index ${index} to ${newValue}. O(1) Operation.` };
-    
-    // Reset
+    yield {arrayState: JSON.parse(JSON.stringify(arr)), message: `Updated index ${index} to ${newValue}.`, codeLine: 3};
     arr[index].state = 'DEFAULT';
 }
 
-// 5. SORTED INSERT
-export function* generateSortedInsertSteps(
-    currentArray: ArrayNode[], 
-    value: number, 
-    size: number, 
-    capacity: number
-): Generator<DSAnimationStep> {
+// --- 5. SEARCH BINARY ---
+export function* generateBinarySearchSteps(currentArray: ArrayNode[], target: number, size: number): Generator<DSAnimationStep> {
     const arr = JSON.parse(JSON.stringify(currentArray));
-
-    if (size >= capacity) {
-        yield { arrayState: arr, message: "Array is Full!", codeLine: 1 };
-        return;
-    }
-
-    let insertPos = size;
-    for (let i = 0; i < size; i++) {
-        arr[i].state = 'ACCESS';
-        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Comparing ${value} with ${arr[i].value}...` };
-        
-        if (value < arr[i].value!) {
-            insertPos = i;
-            arr[i].state = 'SELECTED';
-            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Found position at index ${i} (since ${value} < ${arr[i].value})` };
-            break;
-        }
-        arr[i].state = 'DEFAULT';
-    }
-
-    if (insertPos < size) {
-        for (let i = insertPos; i < size; i++) arr[i].state = 'SHIFTING';
-        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: "Shifting elements to make space..." };
-        
-        for (let i = size; i > insertPos; i--) {
-            arr[i].value = arr[i-1].value;
-            arr[i].id = arr[i-1].id;
-            arr[i].state = 'SHIFTING';
-        }
-    }
-
-    arr[insertPos] = { ...arr[insertPos], value, id: generateId(), state: 'ACCESS' };
-    for(let i=0; i<=size; i++) if (i !== insertPos) arr[i].state = 'DEFAULT';
+    let left = 0, right = size - 1;
     
-    yield { arrayState: arr, message: `Inserted ${value} at sorted position ${insertPos}.` };
-}
-
-// 6. BINARY SEARCH
-export function* generateBinarySearchSteps(
-    currentArray: ArrayNode[],
-    target: number,
-    size: number
-): Generator<DSAnimationStep> {
-    const arr = JSON.parse(JSON.stringify(currentArray));
-    let left = 0;
-    let right = size - 1;
+    // Line 2: Start Loop
+    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: "Starting Binary Search...", codeLine: 2 };
 
     while (left <= right) {
         const mid = Math.floor((left + right) / 2);
         
-        for (let i = 0; i < size; i++) {
-            if (i >= left && i <= right) arr[i].state = 'SHIFTING'; 
-            else arr[i].state = 'DEFAULT'; 
-        }
-        arr[mid].state = 'SELECTED'; 
+        // Visual Range
+        for (let i = 0; i < size; i++) arr[i].state = (i >= left && i <= right) ? 'SHIFTING' : 'DEFAULT';
+        arr[mid].state = 'SELECTED';
+        
+        // Line 3: Calc Mid
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Range [${left}, ${right}]. Mid: ${mid} (${arr[mid].value})`, codeLine: 3 };
 
-        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Range [${left}, ${right}]. Mid index ${mid} (${arr[mid].value}).` };
-
+        // Line 4: Check Match
         if (arr[mid].value === target) {
             arr[mid].state = 'FOUND';
-            yield { arrayState: arr, message: `Found ${target} at index ${mid}!` };
+            yield { arrayState: arr, message: `Found ${target} at index ${mid}!`, codeLine: 4 };
             return;
         }
 
+        // Line 5: Check <
         if (arr[mid].value! < target) {
             left = mid + 1;
-            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `${arr[mid].value} < ${target}. Ignore left half.` };
+            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `${arr[mid].value} < ${target}. Search Right.`, codeLine: 5 };
         } else {
+            // Line 6: Else (Check >)
             right = mid - 1;
-            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `${arr[mid].value} > ${target}. Ignore right half.` };
+            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `${arr[mid].value} > ${target}. Search Left.`, codeLine: 6 };
+        }
+    }
+    arr.forEach((n: any) => n.state = 'DEFAULT');
+    // Line 7: Not Found
+    yield { arrayState: arr, message: `${target} not found.`, codeLine: 7 };
+}
+
+// --- 6. INSERT SORTED ---
+export function* generateSortedInsertSteps(currentArray: ArrayNode[], value: number, size: number, capacity: number): Generator<DSAnimationStep> {
+    const arr = JSON.parse(JSON.stringify(currentArray));
+    if (size >= capacity) { yield { arrayState: arr, message: "Full!", codeLine: 2 }; return; }
+
+    // Line 3: Init i
+    let i = size - 1;
+    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Start checking from end (index ${i}).`, codeLine: 3 };
+
+    // Line 4: Loop check
+    while (i >= 0) {
+        arr[i].state = 'ACCESS';
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Comparing ${value} vs ${arr[i].value}...`, codeLine: 4 };
+        
+        if (arr[i].value! > value) {
+            // Line 5: Shift
+            arr[i+1].value = arr[i].value;
+            arr[i+1].id = arr[i].id;
+            arr[i].state = 'SHIFTING';
+            yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `${arr[i].value} > ${value}, Shift Right.`, codeLine: 5 };
+            
+            // Line 6: Dec i
+            i = i - 1;
+        } else {
+            arr[i].state = 'DEFAULT';
+            break;
         }
     }
 
-    arr.forEach((n: any) => n.state = 'DEFAULT');
-    yield { arrayState: arr, message: `${target} not found.` };
+    // Line 7: Insert
+    arr[i+1] = { ...arr[i+1], value, id: generateId(), state: 'ACCESS' };
+    yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Found position. Insert ${value} at ${i+1}.`, codeLine: 7 };
+    
+    // Reset
+    for(let k=0; k<=size; k++) if (k !== i+1) arr[k].state = 'DEFAULT';
+    
+    // Line 8: Size++
+    yield { arrayState: arr, message: "Insertion Complete.", codeLine: 8 };
 }
 
-// Helper: Tạo mảng rỗng cho Prefix Sum
+// --- 7. RANGE QUERY & HELPERS ---
 export const createPrefixArrayEmpty = (capacity: number): ArrayNode[] => {
     return Array.from({ length: capacity }, (_, i) => ({
         id: `prefix-${i}-${generateId()}`,
@@ -260,80 +222,66 @@ export const createPrefixArrayEmpty = (capacity: number): ArrayNode[] => {
     }));
 };
 
-// 7. BUILD PREFIX SUM
-export function* generateBuildPrefixSumSteps(
-    currentArray: ArrayNode[],
-    size: number,
-    capacity: number
-): Generator<DSAnimationStep> {
+export function* generateBuildPrefixSumSteps(currentArray: ArrayNode[], size: number, capacity: number): Generator<DSAnimationStep> {
     const arr = JSON.parse(JSON.stringify(currentArray)); 
     let prefixArr: ArrayNode[] = createPrefixArrayEmpty(capacity);
-    
-    yield { 
-        arrayState: arr, 
-        secondArrayState: JSON.parse(JSON.stringify(prefixArr)),
-        message: "Preprocessing: Build Prefix Sum Array P[i] = A[0] + ... + A[i]."
-    };
+    yield { arrayState: arr, secondArrayState: JSON.parse(JSON.stringify(prefixArr)), message: "Building Prefix Sum..." };
 
     let runningSum = 0;
     for (let i = 0; i < size; i++) {
         arr[i].state = 'ACCESS';
         runningSum += arr[i].value!;
-        
         prefixArr[i].value = runningSum;
         prefixArr[i].state = 'SELECTED'; 
-
-        yield {
-            arrayState: JSON.parse(JSON.stringify(arr)),
-            secondArrayState: JSON.parse(JSON.stringify(prefixArr)),
-            message: `P[${i}] = P[${i-1} ?? 0] + A[${i}] = ${runningSum}`
-        };
-
+        yield { arrayState: JSON.parse(JSON.stringify(arr)), secondArrayState: JSON.parse(JSON.stringify(prefixArr)), message: `P[${i}] = ${runningSum}` };
         arr[i].state = 'DEFAULT';
         prefixArr[i].state = 'DEFAULT'; 
     }
-
-    yield {
-        arrayState: arr,
-        secondArrayState: prefixArr,
-        message: "Prefix Sum Array built! Ready for O(1) queries."
-    };
+    yield { arrayState: arr, secondArrayState: prefixArr, message: "Prefix Sum Built." };
 }
 
-// 8. RANGE SUM QUERY
-export function* generatePrefixSumQuerySteps(
-    currentArray: ArrayNode[],
-    prefixArray: ArrayNode[], 
-    start: number,
-    end: number,
-    size: number
-): Generator<DSAnimationStep> {
+export function* generatePrefixSumQuerySteps(currentArray: ArrayNode[], prefixArray: ArrayNode[], start: number, end: number, size: number): Generator<DSAnimationStep> {
     const arr = JSON.parse(JSON.stringify(currentArray));
     const prefix = JSON.parse(JSON.stringify(prefixArray));
 
     if (start < 0 || end >= size || start > end) {
-        yield { arrayState: arr, secondArrayState: prefix, message: "Invalid Range!" };
+        yield { arrayState: arr, secondArrayState: prefix, message: "Invalid Range!", codeLine: 1 };
         return;
     }
 
     for(let i = start; i <= end; i++) arr[i].state = 'SHIFTING'; 
+    
+    // Line 3: Check L==0
+    yield { arrayState: JSON.parse(JSON.stringify(arr)), secondArrayState: JSON.parse(JSON.stringify(prefix)), message: `Checking range [${start}, ${end}]...`, codeLine: 3 };
 
-    prefix[end].state = 'FOUND'; 
-
-    let result = prefix[end].value!;
-    let formula = `Sum(${start}, ${end}) = P[${end}]`;
-
-    if (start > 0) {
-        prefix[start - 1].state = 'DELETED'; 
-        result -= prefix[start - 1].value!;
-        formula += ` - P[${start - 1}]`;
+    if (start === 0) {
+        // Line 4: Return P[R]
+        prefix[end].state = 'FOUND';
+        yield { arrayState: arr, secondArrayState: prefix, message: `L=0. Result = P[${end}] = ${prefix[end].value}`, codeLine: 4 };
     } else {
-        formula += ` (L=0, take P[R])`;
+        // Line 6: Return P[R] - P[L-1]
+        prefix[end].state = 'FOUND';
+        prefix[start-1].state = 'DELETED';
+        const res = prefix[end].value! - prefix[start-1].value!;
+        yield { arrayState: arr, secondArrayState: prefix, message: `Result = P[${end}] - P[${start-1}] = ${res}`, codeLine: 6 };
     }
+}
 
-    yield {
-        arrayState: arr,
-        secondArrayState: prefix,
-        message: `${formula} = ${result}. Time: O(1).`
-    };
+// Dummy MinMax (giữ cho không lỗi import, có thể update codeLine sau nếu cần)
+export function* generateMinMaxSteps(currentArray: ArrayNode[], size: number, type: 'MIN' | 'MAX'): Generator<DSAnimationStep> {
+    const arr = JSON.parse(JSON.stringify(currentArray));
+    if(size===0) return;
+    let best = 0;
+    arr[0].state = 'SELECTED';
+    yield {arrayState: JSON.parse(JSON.stringify(arr)), message: `Start at 0`};
+    for(let i=1; i<size; i++) {
+        arr[i].state = 'ACCESS';
+        yield {arrayState: JSON.parse(JSON.stringify(arr)), message: `Compare...`};
+        const better = type === 'MIN' ? arr[i].value! < arr[best].value! : arr[i].value! > arr[best].value!;
+        if(better) {
+            arr[best].state = 'DEFAULT'; best = i; arr[best].state = 'SELECTED';
+        } else arr[i].state = 'DEFAULT';
+    }
+    arr[best].state = 'FOUND';
+    yield {arrayState: arr, message: `Found!`};
 }

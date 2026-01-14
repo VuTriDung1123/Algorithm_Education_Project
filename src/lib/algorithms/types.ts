@@ -67,3 +67,11 @@ export interface AnimationStep {
     swaps: number;       // Đếm thao tác Move (Push/Pop)
   };
 }
+export interface DSAnimationStep {
+  arrayState: ArrayNode[];
+  secondArrayState?: ArrayNode[]; // Dùng cho Prefix Sum hoặc Mảng cũ khi resize
+  tempArrayState?: ArrayNode[];   // THÊM: Dùng cho mảng mới đang copy sang (Resizing)
+  message: string;
+  codeLine?: number;
+  auxiliary?: Record<string, unknown>;
+}

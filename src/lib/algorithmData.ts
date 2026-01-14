@@ -38,7 +38,7 @@ export const algorithmCategories: AlgorithmCategory[] = [
     items: [
       // 1. Cơ bản
       { title: "Array", description: "Mảng tĩnh cố định kích thước.", href: "/data-structures/array", tags: ["Basic"], isReady: true }, // OPEN
-      { title: "Dynamic Array (Vector)", description: "Mảng có thể thay đổi kích thước.", href: "/data-structures/vector", tags: ["Basic"], isReady: false },
+      { title: "Dynamic Array (Vector)", description: "Mảng có thể thay đổi kích thước.", href: "/data-structures/dynamic-array", tags: ["Basic"], isReady: true }, // OPEN
       { title: "Linked List", description: "Danh sách liên kết đơn.", href: "/data-structures/linked-list", tags: ["Basic"], isReady: false },
       { title: "Doubly Linked List", description: "Danh sách liên kết đôi.", href: "/data-structures/doubly-linked-list", tags: ["Basic"], isReady: false },
       { title: "Stack", description: "Ngăn xếp (LIFO).", href: "/data-structures/stack", tags: ["Basic"], isReady: false },
