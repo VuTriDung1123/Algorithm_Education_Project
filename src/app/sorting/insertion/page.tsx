@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, Pause, StepForward, StepBack, 
   ArrowLeft, SkipBack, SkipForward,
-  ListRestart, CheckCircle2, Code2, Activity,
+  CheckCircle2, Code2, Activity,
   Hash, ArrowRightLeft, Clock, Zap,
   Info, X, BookOpen, 
   Volume2, VolumeX, Share2, Gamepad2, Trophy, ThumbsDown,
@@ -22,8 +22,6 @@ import InsertionCards from "@/components/Visualization/InsertionCards";
 
 // --- 1. CONFIG ---
 const ARRAY_SIZE = 10; // Giữ 10 để các lá bài to, rõ
-const MIN_VALUE = 1;   // Từ 1-13 (giống bộ bài tây) hoặc 10-99
-const MAX_VALUE = 13;  // Để giống bài tây cho vui, hoặc để 99 tùy bạn. Let's use 99 for general.
 const ANIMATION_SPEED_MIN = 10;
 const ANIMATION_SPEED_MAX = 500;
 
@@ -132,7 +130,6 @@ function InsertionSortVisualizer() {
   const handleRandomize = () => loadNewArray(generateRandomArray());
   const handleSorted = () => loadNewArray(generateSortedArray());
   const handleReverse = () => loadNewArray(generateReverseSortedArray());
-  const handleNearlySorted = () => loadNewArray(generateNearlySortedArray());
   const handleUserSubmit = () => { const arr = userInput.split(",").map(num => parseInt(num.trim())).filter(num => !isNaN(num)); if (arr.length > 0) loadNewArray(arr.slice(0, 20)); else alert("Invalid input!"); };
   const handleStepForward = () => { setIsPlaying(false); if (currentStep < timeline.length - 1) setCurrentStep(c => c + 1); };
   const handleStepBackward = () => { setIsPlaying(false); if (currentStep > 0) setCurrentStep(c => c - 1); };

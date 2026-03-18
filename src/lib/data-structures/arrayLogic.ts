@@ -31,29 +31,31 @@ export function* generateInsertSteps(currentArray: ArrayNode[], index: number, v
     }
 
     const isTail = index === size;
-    const isHead = index === 0;
 
-    // Highlight Loop / Shift
     if (!isTail) {
-        // Line 3: Start Loop (Shift)
         yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Prepare to shift elements from index ${index} to right.`, codeLine: 3 };
         
         for (let i = size; i > index; i--) {
-            arr[i].value = arr[i-1].value;
+            // SỬA LỖI Ở ĐÂY: Hoán đổi (Swap) ID thay vì copy để tránh Duplicate Key
+            const tempId = arr[i].id;
             arr[i].id = arr[i-1].id;
+            arr[i-1].id = tempId;
+            
+            arr[i].value = arr[i-1].value;
             arr[i].state = 'SHIFTING';
         }
-        // Line 4: Shifting done inside loop
+        // Xóa value ở vị trí cũ sau khi đã shift đi
+        arr[index].value = null; 
+        
         yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Shifted elements to make space at index ${index}.`, codeLine: 4 };
     }
 
-    // Line 5: Insert (Assign Value)
-    arr[index] = { ...arr[index], value, id: generateId(), state: 'ACCESS' };
+    // Insert (Assign Value)
+    arr[index] = { ...arr[index], value, state: 'ACCESS' }; // Không dùng generateId() nữa, giữ nguyên ID hiện tại của slot đó
     
     // Reset colors
     for(let i=0; i<=size; i++) if (i !== index) arr[i].state = 'DEFAULT';
     
-    // Line 6: Size++
     yield { arrayState: arr, message: `Inserted ${value} at index ${index}.`, codeLine: isTail ? 3 : 5 };
 }
 
@@ -61,7 +63,6 @@ export function* generateInsertSteps(currentArray: ArrayNode[], index: number, v
 export function* generateDeleteSteps(currentArray: ArrayNode[], index: number, size: number): Generator<DSAnimationStep> {
     const arr = JSON.parse(JSON.stringify(currentArray));
     
-    // Line 2: Check Index
     if (index < 0 || index >= size) { 
         yield { arrayState: arr, message: "Index out of bounds", codeLine: 2 }; 
         return; 
@@ -73,23 +74,28 @@ export function* generateDeleteSteps(currentArray: ArrayNode[], index: number, s
 
     // Shift Logic
     if (index < size - 1) {
-        // Line 4: Loop Shift
         yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `Shifting elements from index ${index+1} to left.`, codeLine: 4 };
+        
         for (let i = index; i < size - 1; i++) {
-            arr[i].value = arr[i+1].value;
+            // SỬA LỖI Ở ĐÂY: Hoán đổi (Swap) ID
+            const tempId = arr[i].id;
             arr[i].id = arr[i+1].id;
+            arr[i+1].id = tempId;
+
+            arr[i].value = arr[i+1].value;
             arr[i].state = 'SHIFTING';
         }
-        arr[size - 1] = { ...arr[size - 1], value: null, id: generateId(), state: 'DEFAULT' };
-        // Line 5: Shift inside loop
+        
+        // Đặt phần tử cuối cùng thành rỗng
+        arr[size - 1].value = null;
+        arr[size - 1].state = 'DEFAULT';
+        
         yield { arrayState: JSON.parse(JSON.stringify(arr)), message: "Shift complete.", codeLine: 5 };
     }
 
-    arr.forEach((n:any) => n.state = 'DEFAULT');
-    // Line 6: Size--
+    arr.forEach((n: ArrayNode) => n.state = 'DEFAULT');
     yield { arrayState: arr, message: `Deleted. Size is now ${size - 1}.`, codeLine: 6 };
 }
-
 // --- 3. SEARCH LINEAR ---
 export function* generateSearchSteps(currentArray: ArrayNode[], target: number, size: number): Generator<DSAnimationStep> {
     const arr = JSON.parse(JSON.stringify(currentArray));
@@ -165,7 +171,7 @@ export function* generateBinarySearchSteps(currentArray: ArrayNode[], target: nu
             yield { arrayState: JSON.parse(JSON.stringify(arr)), message: `${arr[mid].value} > ${target}. Search Left.`, codeLine: 6 };
         }
     }
-    arr.forEach((n: any) => n.state = 'DEFAULT');
+    arr.forEach((n: ArrayNode) => n.state = 'DEFAULT');
     // Line 7: Not Found
     yield { arrayState: arr, message: `${target} not found.`, codeLine: 7 };
 }
@@ -224,7 +230,7 @@ export const createPrefixArrayEmpty = (capacity: number): ArrayNode[] => {
 
 export function* generateBuildPrefixSumSteps(currentArray: ArrayNode[], size: number, capacity: number): Generator<DSAnimationStep> {
     const arr = JSON.parse(JSON.stringify(currentArray)); 
-    let prefixArr: ArrayNode[] = createPrefixArrayEmpty(capacity);
+    const prefixArr: ArrayNode[] = createPrefixArrayEmpty(capacity);
     yield { arrayState: arr, secondArrayState: JSON.parse(JSON.stringify(prefixArr)), message: "Building Prefix Sum..." };
 
     let runningSum = 0;

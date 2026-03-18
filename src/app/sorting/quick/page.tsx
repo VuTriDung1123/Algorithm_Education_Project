@@ -6,11 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, Pause, StepForward, StepBack, 
   ArrowLeft, SkipBack, SkipForward,
-  ListRestart, CheckCircle2, Code2, Activity,
+  CheckCircle2, Code2, Activity,
   Hash, ArrowRightLeft, Clock, Zap,
   Info, X, BookOpen, 
   Volume2, VolumeX, Share2, Gamepad2, Trophy, ThumbsDown,
-  ArrowRight, XCircle
+  XCircle
 } from "lucide-react"; 
 import Link from "next/link";
 import { generateQuickSortTimeline } from "@/lib/algorithms/quickSort";
@@ -51,7 +51,6 @@ const QuickSortTheory = () => (
 const generateRandomArray = (len = ARRAY_SIZE) => Array.from({ length: len }, () => Math.floor(Math.random() * (MAX_VALUE - MIN_VALUE) + MIN_VALUE));
 const generateSortedArray = (len = ARRAY_SIZE) => { const step = Math.floor((MAX_VALUE - MIN_VALUE) / len); return Array.from({ length: len }, (_, i) => MIN_VALUE + i * step); };
 const generateReverseSortedArray = (len = ARRAY_SIZE) => generateSortedArray(len).reverse();
-const generateNearlySortedArray = (len = ARRAY_SIZE) => { const arr = generateSortedArray(len); for (let i = 0; i < 3; i++) { const idx1 = Math.floor(Math.random() * len); const idx2 = Math.floor(Math.random() * len); [arr[idx1], arr[idx2]] = [arr[idx2], arr[idx1]]; } return arr; };
 
 export default function QuickSortPage() {
   return (
@@ -132,7 +131,6 @@ function QuickSortVisualizer() {
   const handleRandomize = () => loadNewArray(generateRandomArray());
   const handleSorted = () => loadNewArray(generateSortedArray());
   const handleReverse = () => loadNewArray(generateReverseSortedArray());
-  const handleNearlySorted = () => loadNewArray(generateNearlySortedArray());
   const handleUserSubmit = () => { const arr = userInput.split(",").map(num => parseInt(num.trim())).filter(num => !isNaN(num)); if (arr.length > 0) loadNewArray(arr.slice(0, 20)); else alert("Invalid input!"); };
   const handleStepForward = () => { setIsPlaying(false); if (currentStep < timeline.length - 1) setCurrentStep(c => c + 1); };
   const handleStepBackward = () => { setIsPlaying(false); if (currentStep > 0) setCurrentStep(c => c - 1); };
@@ -264,7 +262,7 @@ function QuickSortVisualizer() {
                                     </div>
                                 </div>
                             ) : currentData.type === 'PIVOT' ? (
-                                <div className="text-center italic text-yellow-400">Selected Pivot: {currentData.variables.pivotVal}. Starting Partition...</div>
+                                <div className="text-center italic text-yellow-400">Selected Pivot: {currentData.variables.pivotIdx !== undefined ? currentData.arrayState[currentData.variables.pivotIdx] : '-'}. Starting Partition...</div>
                             ) : (
                                 <button onClick={handleStepForward} className="px-4 py-2 bg-slate-700 rounded">Next Step</button>
                             )}
@@ -309,7 +307,7 @@ function QuickSortVisualizer() {
                  <div className="w-full md:w-64 space-y-2">
                     <div className="flex items-center gap-2 text-purple-400 text-sm font-bold uppercase tracking-wider">Variables</div>
                     <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Pivot Val</span><span className="text-yellow-400 font-mono font-bold">{currentData.variables.pivotVal ?? '-'}</span></div>
+                        <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Pivot Val</span><span className="text-yellow-400 font-mono font-bold">{currentData.variables.pivotIdx !== undefined ? currentData.arrayState[currentData.variables.pivotIdx] : '-'}</span></div>
                         <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Scan Val</span><span className="text-cyan-400 font-mono font-bold">{currentData.variables.compareVal1 ?? '-'}</span></div>
                         <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Range</span><span className="text-white font-mono font-bold">[{currentData.variables.left ?? '-'}, {currentData.variables.right ?? '-'}]</span></div>
                         <div className="bg-slate-950 border border-slate-800 p-2 rounded flex justify-between items-center"><span className="text-slate-500 font-mono text-xs">Wall (i)</span><span className="text-blue-400 font-mono font-bold">{currentData.variables.i ?? '-'}</span></div>
