@@ -39,11 +39,36 @@ export interface TreeNodeData {
   auxiliary?: any;
 }
 
+export interface GraphNodeData {
+  id: string;
+  value: string | number;
+  x: number; // percentage or px
+  y: number; // percentage or px
+  state: MemoryState;
+  auxiliary?: any;
+}
+
+export interface GraphEdgeData {
+  id: string;
+  source: string;
+  target: string;
+  weight?: number;
+  isDirected?: boolean;
+  state: MemoryState;
+  auxiliary?: any;
+}
+
+export interface GraphStateData {
+  nodes: GraphNodeData[];
+  edges: GraphEdgeData[];
+}
+
 export interface DSAnimationStep {
   arrayState: ArrayNode[];
   secondArrayState?: ArrayNode[]; // Dùng cho Prefix Sum hoặc Mảng cũ khi resize
   tempArrayState?: ArrayNode[];   // THÊM: Dùng cho mảng mới đang copy sang (Resizing)
   treeState?: TreeNodeData[];     // Dùng cho Tree Visualization
+  graphState?: GraphStateData;    // THÊM: Dùng cho Graph Visualization
   message: string;
   codeLine?: number;
   auxiliary?: Record<string, unknown>;

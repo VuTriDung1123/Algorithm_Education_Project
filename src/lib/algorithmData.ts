@@ -113,19 +113,19 @@ export const algorithmCategories: AlgorithmCategory[] = [
     color: "text-pink-400",
     items: [
       // 1. Duyệt
-      { title: "DFS", description: "Duyệt theo chiều sâu (Depth First Search).", href: "/graph/dfs", tags: ["Traversal"], isReady: true },
-      { title: "BFS", description: "Duyệt theo chiều rộng (Breadth First Search).", href: "/graph/bfs", tags: ["Traversal"], isReady: true },
+      { title: "DFS", description: "Duyệt theo chiều sâu (Depth First Search).", href: "/data-structures/graph-traversal", tags: ["Traversal"], isReady: true },
+      { title: "BFS", description: "Duyệt theo chiều rộng (Breadth First Search).", href: "/data-structures/graph-traversal", tags: ["Traversal"], isReady: true },
       // 2. Đường đi ngắn nhất
-      { title: "Dijkstra", description: "Ngắn nhất từ 1 nguồn (không âm).", href: "/graph/dijkstra", tags: ["Shortest Path"], isReady: true },
+      { title: "Dijkstra", description: "Ngắn nhất từ 1 nguồn (không âm).", href: "/data-structures/dijkstra", tags: ["Shortest Path"], isReady: true },
       { title: "Bellman-Ford", description: "Ngắn nhất từ 1 nguồn (có âm).", href: "/graph/bellman-ford", tags: ["Shortest Path"], isReady: true },
       { title: "Floyd–Warshall", description: "Ngắn nhất giữa mọi cặp đỉnh.", href: "/graph/floyd", tags: ["All-pairs"], isReady: true },
       { title: "A* Search", description: "Tìm đường thông minh (Heuristic).", href: "/graph/a-star", tags: ["Pathfinding"], isReady: true },
       // 3. MST
-      { title: "Kruskal", description: "Cây khung nhỏ nhất (Cạnh).", href: "/graph/kruskal", tags: ["MST"], isReady: true },
+      { title: "Kruskal", description: "Cây khung nhỏ nhất (Cạnh).", href: "/data-structures/mst-kruskal", tags: ["MST"], isReady: true },
       { title: "Prim", description: "Cây khung nhỏ nhất (Đỉnh).", href: "/graph/prim", tags: ["MST"], isReady: true },
       // 4. Khác
       { title: "Topological Sort", description: "Sắp xếp tô-pô (DAG).", href: "/graph/topo", tags: ["DAG"], isReady: true },
-      { title: "Union-Find (DSU)", description: "Cấu trúc dữ liệu các tập rời nhau.", href: "/graph/dsu", tags: ["Structure"], isReady: true },
+      { title: "Union-Find (DSU)", description: "Cấu trúc dữ liệu các tập rời nhau.", href: "/data-structures/dsu", tags: ["Structure"], isReady: true },
       { title: "Tarjan", description: "Tìm thành phần liên thông mạnh (SCC).", href: "/graph/tarjan", tags: ["SCC"], isReady: true },
       { title: "Kosaraju", description: "Tìm SCC (Duyệt 2 lần DFS).", href: "/graph/kosaraju", tags: ["SCC"], isReady: true },
       { title: "Edmonds–Karp", description: "Luồng cực đại (Max Flow).", href: "/graph/edmonds-karp", tags: ["Flow"], isReady: true },
