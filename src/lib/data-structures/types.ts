@@ -63,12 +63,24 @@ export interface GraphStateData {
   edges: GraphEdgeData[];
 }
 
+export interface SearchStateData {
+    array: number[];
+    target: number;
+    left?: number;
+    right?: number;
+    mid?: number;
+    current?: number;
+    found?: boolean;
+    foundIndex?: number;
+}
+
 export interface DSAnimationStep {
   arrayState: ArrayNode[];
   secondArrayState?: ArrayNode[]; // Dùng cho Prefix Sum hoặc Mảng cũ khi resize
   tempArrayState?: ArrayNode[];   // THÊM: Dùng cho mảng mới đang copy sang (Resizing)
   treeState?: TreeNodeData[];     // Dùng cho Tree Visualization
   graphState?: GraphStateData;    // THÊM: Dùng cho Graph Visualization
+  searchState?: SearchStateData;  // THÊM: Dùng cho Searching
   message: string;
   codeLine?: number;
   auxiliary?: Record<string, unknown>;
