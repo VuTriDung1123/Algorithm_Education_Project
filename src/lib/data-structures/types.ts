@@ -14,7 +14,8 @@ export interface ArrayNode {
   value: number | null; 
   address: string;  
   state: MemoryState;
-  isVisible: boolean; 
+  isVisible: boolean;
+  auxiliary?: any;
 }
 
 export type ArrayOperation = 
@@ -24,19 +25,25 @@ export type ArrayOperation =
   | 'SEARCH' 
   | 'UPDATE';
 
-export interface DSAnimationStep {
-  arrayState: ArrayNode[];
-  // THÊM DÒNG NÀY: Để chứa trạng thái mảng thứ 2 (Prefix Sum)
-  secondArrayState?: ArrayNode[]; 
-  message: string;
-  codeLine?: number;
-  auxiliary?: Record<string, unknown>;
+
+export interface TreeNodeData {
+  id: string;
+  value: number | string | null;
+  state: MemoryState;
+  x: number;
+  y: number;
+  left?: string | null; // id of left child
+  right?: string | null; // id of right child
+  children?: string[]; // for n-ary trees like Trie
+  isVisible: boolean;
+  auxiliary?: any;
 }
 
 export interface DSAnimationStep {
   arrayState: ArrayNode[];
   secondArrayState?: ArrayNode[]; // Dùng cho Prefix Sum hoặc Mảng cũ khi resize
   tempArrayState?: ArrayNode[];   // THÊM: Dùng cho mảng mới đang copy sang (Resizing)
+  treeState?: TreeNodeData[];     // Dùng cho Tree Visualization
   message: string;
   codeLine?: number;
   auxiliary?: Record<string, unknown>;

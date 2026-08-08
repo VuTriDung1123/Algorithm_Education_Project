@@ -4,12 +4,12 @@ const generateId = () => Math.random().toString(36).substr(2, 9);
 const START_ADDRESS = 0x1000;
 
 // Helper tạo node
-const createNode = (index: number, value: number | null, startAddr: number = START_ADDRESS) => ({
+const createNode = (index: number, value: number | null, startAddr: number = START_ADDRESS): ArrayNode => ({
     id: `dnode-${index}-${generateId()}`,
     index,
     value,
     address: `0x${(startAddr + index * 4).toString(16).toUpperCase()}`,
-    state: 'DEFAULT' as const,
+    state: 'DEFAULT',
     isVisible: true,
 });
 
