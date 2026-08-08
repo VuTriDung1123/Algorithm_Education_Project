@@ -10,7 +10,7 @@ interface TreeViewProps {
 
 export default function TreeView({ nodes, containerHeight = 400 }: TreeViewProps) {
     return (
-        <div className="relative w-full overflow-hidden" style={{ height: containerHeight }}>
+        <div className="relative w-full overflow-auto" style={{ height: containerHeight }}>
             {/* SVG cho các đường nối (Edges) */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
                 {nodes.map(node => {

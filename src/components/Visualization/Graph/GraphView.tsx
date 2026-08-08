@@ -12,7 +12,7 @@ export default function GraphView({ graph, containerHeight = 400 }: GraphViewPro
     const { nodes, edges } = graph;
 
     return (
-        <div className="relative w-full overflow-hidden" style={{ height: containerHeight }}>
+        <div className="relative w-full overflow-auto" style={{ height: containerHeight }}>
             {/* SVG cho các đường nối (Edges) */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
                 <defs>
